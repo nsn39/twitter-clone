@@ -6,20 +6,20 @@ import WhoToFollow from "./whoToFollow";
 function Sidebar () {
 
     return (
-        <div className="basis-4/12 flex flex-col p-4 mr-16">
+        <div className="hidden md:flex md:w-[29%] flex flex-col p-4 pl-8 pr-1 mr-14 h-full">
             
             <div className=""> 
                 <SearchBar />
             </div>
             
             <div className="flex flex-col border border-gray-400 p-2 mt-4 rounded-lg">
-                <h3 className="text-2xl font-bold">Subscribe to Premium</h3>
+                <h3 className="text-xl font-extrabold">Subscribe to Premium</h3>
                 <p className="text-base">Subscribe to unlock new features and if eligible, receive a share of ads revenue.</p>
                 <button className="text-white font-bold bg-black py-2 px-3 rounded-full">Subscribe</button>
             </div>
             
             <div className="flex flex-col border border-gray-400 pt-2 mt-4 rounded-lg">
-                <h3 className="text-2xl font-bold p-2">What's happening?</h3>
+                <h3 className="text-xl font-extrabold p-2">What's happening?</h3>
                 <TrendingCard trendingType="Television" trendingTopic="Breaking Bad" trendingPosts="996" />
                 <TrendingCard trendingType="Trending" trendingTopic="United States" trendingPosts="2000" />
                 <TrendingCard trendingType="Trending" trendingTopic="Oppenheimer" trendingPosts="96" />
@@ -43,9 +43,11 @@ function Sidebar () {
             </div>
             
 
-            <h2 className="text-2xl mt-4 font-bold">Messages</h2>           
+            <h2 className="text-2xl mt-4 font-extrabold">Messages</h2>           
         </div>
     )
 }
 
 export default Sidebar;
+
+// 2 - 5 - 3

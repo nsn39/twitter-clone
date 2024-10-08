@@ -13,7 +13,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from loguru import logger
 
-from backend.db.db import User, session
+from db.models import User
+from db.db import session
 
 # to get a string like this run:
 # openssl rand -hex 32
@@ -46,6 +47,10 @@ class UserInDB(UserSchema):
     gender:str
     hashed_password:str
     country:str
+    profile_pic_filename: str | None = None
+    bio_text: str | None = None
+    location: str | None = None
+    website: str | None = None
     
 class RegistrationForm(BaseModel):
     username: str | None = None
@@ -202,6 +207,7 @@ async def signup_for_access_token(
     print("Form data: ", birth_day, birth_month, birth_year)
     # save the user
     user_obj = UserInDB(
+        id=uuid.uuid4(),
         username=username,
         email=email,
         fullname=full_name,
@@ -224,7 +230,7 @@ async def signup_for_access_token(
         json.dump(users, fp)
     '''
     session.add(User(
-        id=uuid.uuid4(),
+        id=user_obj.id,
         fullname=user_obj.fullname,
         username=user_obj.username,
         birthdate=date(user_obj.birth_year, user_obj.birth_month, user_obj.birth_day),

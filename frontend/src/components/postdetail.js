@@ -35,7 +35,7 @@ function PostDetail(props) {
     }, []);
 
     return (
-        <div className="basis-5/12 border border-b-0 border-gray-400 h-fit">
+        <div className="h-screen md:w-[46%] border-x-[0.5px] border-gray-200">
             <div className="flex flex-row p-2 items-center">
                 <button onClick={backLink} className="hover:bg-slate-200 hover:rounded-full ml-2">
                     <svg className="h-8 w-8" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#000000" d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"></path><path fill="#000000" d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"></path></g></svg>

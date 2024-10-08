@@ -8,7 +8,7 @@ function Post(props) {
     const { slug } = useParams();
 
     return (
-        <div className="flex flex-row">
+        <div className="flex flex-col-reverse md:flex-row mx-auto md:w-[1366px] font-chirp">
             <Navbar></Navbar>
 
             <PostDetail tweetSlug={slug}></PostDetail>

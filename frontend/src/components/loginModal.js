@@ -44,7 +44,7 @@ function LoginModal({isVisible, onClose}) {
             if (res.status == 200) {
                 //console.log("response: ", res.json());
                 console.log("login successful");
-                navigate("/home")
+                navigate("/")
             }
             else {
                 console.log("login failed");
@@ -71,8 +71,8 @@ function LoginModal({isVisible, onClose}) {
     }
 
     return (
-        <div onClick={handleClose} id="wrapper" className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm flex justify-center items-center">
-            <div className="basis-1/2 flex flex-col bg-white rounded-lg shadow">
+        <div onClick={handleClose} id="wrapper" className="fixed inset-0 bg-black bg-opacity-25 font-chirp backdrop-blur-sm flex items-start justify-center md:items-center">
+            <div className="w-10/12 md:w-1/2 flex flex-col mt-20 md:mt-0 bg-white rounded-lg shadow">
                 <div className="flex flex-row p-4">
                     <button onClick={deleteStateAndClose} className="flex-none h-10 w-10 hover:bg-gray-300 rounded-full flex items-center justify-center cursor-pointer">
                         <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M5.46967 5.46967C5.76256 5.17678 6.23744 5.17678 6.53033 5.46967L18.5303 17.4697C18.8232 17.7626 18.8232 18.2374 18.5303 18.5303C18.2374 18.8232 17.7626 18.8232 17.4697 18.5303L5.46967 6.53033C5.17678 6.23744 5.17678 5.76256 5.46967 5.46967Z" fill="#000000"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M18.5303 5.46967C18.8232 5.76256 18.8232 6.23744 18.5303 6.53033L6.53035 18.5303C6.23745 18.8232 5.76258 18.8232 5.46969 18.5303C5.17679 18.2374 5.17679 17.7626 5.46968 17.4697L17.4697 5.46967C17.7626 5.17678 18.2374 5.17678 18.5303 5.46967Z" fill="#000000"></path> </g></svg>
@@ -83,10 +83,10 @@ function LoginModal({isVisible, onClose}) {
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex flex-col px-24 py-12">
-                    <h3 className="font-bold text-3xl mb-2">Sign in to Twitter</h3>
+                <form onSubmit={handleSubmit} className="flex flex-col p-6 md:px-24 md:py-12">
+                    <h3 className="font-bold text-xl md:text-3xl mb-2">Sign in to Twitter</h3>
                     
-                    <p className="mb-8">Don't have an account? <a href="/landing" className="text-sky-900 hover:underline">Sign up</a></p>
+                    <p className="text-sm md:text-base mb-8">Don't have an account? <a href="/landing" className="text-sky-900 hover:underline">Sign up</a></p>
                     
                     <Message content={submitMessage} />
                     

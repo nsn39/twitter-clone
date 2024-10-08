@@ -1,3 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    @font-face {
+        font-family: "Chirp";
+        font-style: normal;
+        font-weight: 700;
+        src: url("./fonts/Chirp-Bold.ttf");
+    }
+
+    @font-face {
+        font-family: "Chirp";
+        font-style: normal;
+        font-weight: 800;
+        src: url("./fonts/Chirp-Heavy.ttf");
+    }
+
+    @font-face {
+        font-family: "Chirp";
+        font-style: normal;
+        font-weight: 500;
+        src: url("./fonts/Chirp-Medium.ttf");
+    }
+
+    @font-face {
+        font-family: "Chirp";
+        font-style: normal;
+        font-weight: 400;
+        src: url("./fonts/Chirp-Regular.ttf");
+    }
+}

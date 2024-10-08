@@ -2,18 +2,21 @@ import uuid
 import datetime
 from typing import Annotated
 
-from fastapi import FastAPI, Cookie, status, HTTPException, Request
+from fastapi import FastAPI, Cookie, status, HTTPException, Request, UploadFile, Form, File
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import FileResponse
 from loguru import logger
 from starlette.middleware.cors import CORSMiddleware
-from sqlalchemy import select
+from sqlalchemy import select, update
 from pydantic import BaseModel
 
 from auth import router as auth_router
 from auth import get_current_user, get_user
-from backend.db.db import session, Post, User
+from db.db import session 
+from db.models import Post, User
 
 API_PREFIX = "/twitter-clone-api"
+USER_FILES_PATH = "/home/nishan/Practice/temp_fs/"
 
 app = FastAPI(
     title="twitter-clone",
@@ -181,6 +184,76 @@ async def get_user_profile(
         logger.error(f"Unable to retrieve profile data due to {e}")
         raise e
 
+@app.patch(API_PREFIX + "/profile/", status_code=200)
+async def update_profile(
+    profile_pic: Annotated[UploadFile, File()],
+    userToken: Annotated[str, Cookie()],
+    fullname: Annotated[str, Form()] = "",
+    bio: Annotated[str, Form()] = "",
+    location: Annotated[str, Form()] = "",
+    website: Annotated[str, Form()] = ""
+):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken) 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            )
+            
+        # Save the file to local file system
+        file_data = await profile_pic.read()
+        temp_file_name = str(uuid.uuid4())
+        with open(USER_FILES_PATH + temp_file_name, "wb") as fp:
+            fp.write(file_data)
+            
+        session.execute(
+            update(User)
+            .where(User.username == user.username)
+            .values(
+                profile_pic_filename=temp_file_name,
+                fullname=fullname, 
+                bio_text=bio, 
+                location=location,
+                website=website
+            )
+        )
+        session.commit()
+        return {"username": user.username}
+        
+    except Exception as e:
+        logger.error(f"Unable to update profile data due to {e}")
+        raise e
+    
+@app.get(API_PREFIX + "/fs/{file_id}")
+async def get_file(file_id: str, userToken: Annotated[str, Cookie()]):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken) 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            )
+        
+        return FileResponse(
+            path=USER_FILES_PATH+file_id,
+            media_type="image/jpeg",
+            filename="display_picture_user.jpeg"
+        )
+            
+    except Exception as e:
+        logger.error(f"Unable to serve file due to {e}")
+        raise e
 
 @app.get(API_PREFIX + "/tweet/{id}")
 async def get_tweet(id: str, request: Request):
@@ -287,11 +360,3 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     logger.info("Shutting down.")
-
-
-'''
-    Path ahead:
-    1. profile page complete. view tweets of that user only.
-    2. setup alembic, git etc.
-    3. frontend responsive, other touch ups etc.
-'''

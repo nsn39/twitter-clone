@@ -1,6 +1,7 @@
 import React from "react";
-import { useEffect } from "react";
+import { useEffect, useState, Fragment } from "react";
 import Tweet from "./tweet";
+import EditProfileModal from "./editProfileModal";
 
 import { useNavigate } from "react-router-dom";
 
@@ -8,6 +9,11 @@ function ProfileArea(props) {
     const [userExists, setUserExists] = React.useState(true);
     const [userData, setUserData] = React.useState({});
     const [userTweets, setTweetState] = React.useState([]);
+    const [editMode, setEditMode] = useState(false);
+
+    const handleEditClick = () => {
+        setEditMode(true);
+    }
     const navigate = useNavigate();
 
     let backLink = () => {
@@ -28,8 +34,12 @@ function ProfileArea(props) {
             }
         })
         .then((data) => {
-            if (data) {
-                setUserData(data);
+            if (data) {//accessing fields individually works but setting data at once doesn't ??
+                setUserData({
+                    "full_name": data.fullname,
+                    "username": data.username,
+                    "display_picture_link": data.profile_pic_filename
+                });
                 console.log("User data: ", data);
             }else {
                 setUserExists(false);
@@ -51,14 +61,16 @@ function ProfileArea(props) {
 
     if (!userExists) {
         return (
-            <div className="basis-5/12">
+            <div className="w-[46%] border-x-[0.5px] border-gray-200">
                 <h3 className="font-bold text-3xl mt-24 p-4">Sorry, the user @{props.userName} doesn't exist.</h3>
             </div>
         );
     }
 
     return (
-        <div className="basis-5/12">
+        <Fragment>
+        <div className="md:w-[46%] border-x-[0.5px] border-gray-200">
+
             <div className="flex flex-row p-2 items-center">
                 <button onClick={backLink} className="flex flex-row items-center justify-center h-8 w-8 hover:bg-gray-300 hover:rounded-full">
                     <svg className="h-5 w-5" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#000000" d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"></path><path fill="#000000" d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"></path></g></svg>
@@ -74,16 +86,16 @@ function ProfileArea(props) {
                 <img src="/cover.jpeg" className="h-[200px] w-[600px]"/>
 
                 <div className="absolute h-30 w-30 rounded-full border-2 border-white top-[150px] left-[20px]">
-                    <img src="/lex.jpeg" className="h-28 w-28 rounded-full" />
+                    <img src={"http://localhost:8000/twitter-clone-api/fs/" + userData.display_picture_link} className="h-28 w-28 rounded-full" />
                 </div>
             </div>
 
             <div className="flex flex-row justify-end p-2">
-                <button className="font-bold p-2 border-[0.5px] border-gray-300 rounded-full hover:bg-gray-300">Edit profile</button>
+                <button onClick={handleEditClick} className="font-bold p-2 border-[0.5px] border-gray-300 rounded-full hover:bg-gray-300">Edit profile</button>
             </div>
 
             <div className="flex flex-col mt-5 px-2">
-                <p className="font-bold text-2xl">{userData.fullname}</p>
+                <p className="font-bold text-2xl">{userData.full_name}</p>
                 <p className="text-gray-400">{"@" + userData.username}</p>
                 <div className="flex flex-row text-gray-400 mt-2">
                     <p>Born October 1, 2000</p>
@@ -96,25 +108,46 @@ function ProfileArea(props) {
                 </div>
             </div>
 
-            <div className="flex flex-row border-b-[0.5px]">
-                <button className="flex-auto p-4 font-bold text-gray-500 hover:bg-gray-300">Posts</button>
-                <button className="flex-auto p-4 font-bold text-gray-500 hover:bg-gray-300">Replies</button>
-                <button className="flex-auto p-4 font-bold text-gray-500 hover:bg-gray-300">Highlights</button>
-                <button className="flex-auto p-4 font-bold text-gray-500 hover:bg-gray-300">Articles</button>
-                <button className="flex-auto p-4 font-bold text-gray-500 hover:bg-gray-300">Media</button>
-                <button className="flex-auto p-4 font-bold text-gray-500 hover:bg-gray-300">Likes</button>
+            <div className="flex flex-row border-b-[0.5px] overflow-x-scroll">
+                <button className="flex-auto text-xs md:text-base p-4 font-bold text-gray-500 hover:bg-gray-300">Posts</button>
+                <button className="flex-auto text-xs md:text-base p-4 font-bold text-gray-500 hover:bg-gray-300">Replies</button>
+                <button className="flex-auto text-xs md:text-base p-4 font-bold text-gray-500 hover:bg-gray-300">Highlights</button>
+                <button className="flex-auto text-xs md:text-base p-4 font-bold text-gray-500 hover:bg-gray-300">Articles</button>
+                <button className="flex-auto text-xs md:text-base p-4 font-bold text-gray-500 hover:bg-gray-300">Media</button>
+                <button className="flex-auto text-xs md:text-base p-4 font-bold text-gray-500 hover:bg-gray-300">Likes</button>
             </div>
 
-            <div className="flex flex-col">
-                {
-                    userTweets && userTweets.map(({id, fullname, username, content, created_on}) => (
-                        <Tweet id={id} displayName={fullname} userName={"@" + username} tweetText={content} originalTimestamp={created_on} />
-                    ))
-                }
-            </div>
+            
+            {
+                userTweets && userTweets.map(({id, fullname, username, content, created_on, profile_pic_filename}) => (
+                    <Tweet id={id} displayName={fullname} userName={"@" + username} tweetText={content} originalTimestamp={created_on} displayPicture={profile_pic_filename} />
+                ))
+            }
+            
 
         </div>
+        <EditProfileModal isVisible={editMode} onClose={() => setEditMode(false)}/>
+        </Fragment>
     );
 }
 
 export default ProfileArea;
+
+//photos on tweet component
+//user friendly time in tweets
+//rem mobile responsiveness work
+//post modal rem upload work
+//hidden header and modal for mobile devices.
+//edit profile should work on incomplete form data
+
+
+//like, notification, follow, following, retweets, quote-tweet, replies etc.
+//option to delete tweets from user profile.
+//make search bar usable to search other profiles based on name.
+//dynamic content for who to follow section.
+//make tweets with photo upload option.
+//reset scroll when going to a post page.
+//fix that /fs/ endpoint error.
+
+//messages sticky button, show messages on expanding.
+//users should be able to message each other.

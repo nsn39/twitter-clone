@@ -2,7 +2,7 @@ import WhoToFollow from "./whoToFollow";
 
 function SidebarExplore() {
     return (
-        <div className="basis-4/12 mr-16 flex flex-col p-4">
+        <div className="hidden md:flex md:w-[29%] mr-14 flex flex-col p-4 pr-1 pl-8">
             <WhoToFollow />
 
             <div className="flex flex-row flex-wrap text-sm mt-4 text-gray-400">

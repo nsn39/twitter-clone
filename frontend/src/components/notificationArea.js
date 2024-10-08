@@ -2,7 +2,7 @@ import NotificationCard from "./notificationCard";
 
 function NotificationArea() {
     return (
-        <div className="basis-5/12 flex flex-col">
+        <div className="md:w-[46%] flex flex-col border-x-[0.5px] border-gray-200">
             <div className="flex flex-row p-3 justify-between">
                 <h3 className="font-bold text-xl">Notifications</h3>
                 <button className="h-8 w-8 flex rounded-full hover:bg-gray-300 items-center justify-center">

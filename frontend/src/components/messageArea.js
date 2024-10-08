@@ -2,7 +2,7 @@ import MessageCard from "./messageCard";
 
 function MessageArea() {
     return (
-        <div className="basis-5/12 border-x-[0.5px] border-gray-300">
+        <div className="h-screen md:w-[46%] border-x-[0.5px] border-gray-300">
             <div className="flex flex-row justify-between items-center p-3 px-5">
                 <h3 className="font-bold text-xl">Messages</h3>
 

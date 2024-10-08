@@ -4,7 +4,7 @@ import Timeline from "./timeline";
 
 function Home() {
     return (
-        <div className="flex flex-row">
+        <div className="flex flex-col-reverse md:flex-row mx-auto lg:w-[1366px] font-chirp">
             <Navbar></Navbar>
 
             <Timeline></Timeline>
@@ -15,3 +15,5 @@ function Home() {
 };
 
 export default Home;
+
+//3 - 4 - 7

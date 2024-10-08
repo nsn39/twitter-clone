@@ -1,7 +1,8 @@
 from datetime import datetime, date
 from uuid import uuid4
+from typing import List
 
-from sqlalchemy import String, DateTime, Boolean, Date, Uuid
+from sqlalchemy import String, DateTime, Boolean, Date, Uuid, Integer, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -14,11 +15,13 @@ class Post(Base):
     content: Mapped[str] = mapped_column(String(900), nullable=False)
     content_type: Mapped[str] = mapped_column(String(20), default="text")
     
-    user_id: Mapped[uuid4] = mapped_column(Uuid(), nullable=False)
+    user_id: Mapped[uuid4] = mapped_column(ForeignKey("user.id"), nullable=False)
     
     created_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
     last_updated_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
     
+    user: Mapped["User"] = relationship(back_populates="posts")
+    analytics: Mapped["PostAnalytics"] = relationship(back_populates="post")
 
 class User(Base):
     __tablename__ = "user"
@@ -33,7 +36,51 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(100), nullable=False)
     email: Mapped[str] = mapped_column(String(80), nullable=False)
     phone_no: Mapped[str] = mapped_column(String(30), nullable=False)
+    profile_pic_filename: Mapped[str] = mapped_column(String(200), nullable=True)
+    bio_text: Mapped[str] = mapped_column(String(300), nullable=True)
+    location: Mapped[str] = mapped_column(String(50), nullable=True)
+    website: Mapped[str] = mapped_column(String(50), nullable=True)
     
     disabled: Mapped[bool] = mapped_column(Boolean, default=False)
     created_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
     last_updated_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
+
+    posts: Mapped[List["Post"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    analytics: Mapped["UserAnalytics"] = relationship(back_populates="user")
+    
+
+class PostLikedBy(Base):
+    __tablename__ = "post_liked_by"
+    
+    post_id: Mapped[uuid4] = mapped_column(ForeignKey("post.id"), primary_key=True)
+    user_id: Mapped[uuid4] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    liked_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
+
+class PostAnalytics(Base):
+    __tablename__ = "post_analytics"
+    
+    post_id: Mapped[uuid4] = mapped_column(ForeignKey("post.id"), primary_key=True)
+    
+    likes_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    
+    post: Mapped["Post"] = relationship(back_populates="analytics")
+
+class UserFollowedBy(Base):
+    __tablename__ = "user_followed_by"
+    
+    follower_id: Mapped[uuid4] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    following_id: Mapped[uuid4] = mapped_column(ForeignKey("user.id"), primary_key=True) 
+    followed_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
+
+class UserAnalytics(Base):
+    __tablename__ = "user_analytics"
+    
+    user_id: Mapped[uuid4] = mapped_column(Uuid(), primary_key=True) 
+
+    follower_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    following_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    
+    user: Mapped["User"] = relationship(back_populates="analytics")
+    
