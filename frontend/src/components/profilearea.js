@@ -140,14 +140,16 @@ export default ProfileArea;
 //hidden header and modal for mobile devices.
 //edit profile should work on incomplete form data
 
-
+//show edit/profile or follow button depending on active user.
 //like, notification, follow, following, retweets, quote-tweet, replies etc.
 //option to delete tweets from user profile.
 //make search bar usable to search other profiles based on name.
 //dynamic content for who to follow section.
 //make tweets with photo upload option.
+//option to change cover photo in edit profile.
 //reset scroll when going to a post page.
 //fix that /fs/ endpoint error.
 
+//finally, onto messages.
 //messages sticky button, show messages on expanding.
 //users should be able to message each other.

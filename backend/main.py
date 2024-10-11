@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import FastAPI, Cookie, status, HTTPException, Request, UploadFile, Form, File
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from loguru import logger
 from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy import select, update
@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from auth import router as auth_router
 from auth import get_current_user, get_user
 from db.db import session 
-from db.models import Post, User
+from db.models import Post, User, PostLikedBy, PostAnalytics, UserAnalytics
 
 API_PREFIX = "/twitter-clone-api"
 USER_FILES_PATH = "/home/nishan/Practice/temp_fs/"
@@ -229,6 +229,132 @@ async def update_profile(
     except Exception as e:
         logger.error(f"Unable to update profile data due to {e}")
         raise e
+    
+@app.post(API_PREFIX + "/like/{post_id}", status_code=201)
+async def like_post(post_id: str, userToken: Annotated[str, Cookie()]):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken) 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            )
+        # Check if the post is already liked.
+        result = session.scalars(
+            select(PostLikedBy)
+            .where(PostLikedBy.user_id == user.id)
+            .where(PostLikedBy.post_id == post_id)
+        )
+        post_liked_obj = result.one_or_none()
+        print("Post liked obj: ", post_liked_obj)
+        
+        if not post_liked_obj:
+            session.add(PostLikedBy(post_id=post_id, user_id=user.id))
+            # increment the counter as well
+            result = session.scalars(
+                select(PostAnalytics)
+                .where(PostAnalytics.post_id == post_id)
+            )
+            post_analytics_obj = result.one_or_none()
+            if not post_analytics_obj:
+                session.add(PostAnalytics(post_id=post_id, likes_count=1))
+            else:
+                print("obj: ", post_analytics_obj)
+                likes_count = post_analytics_obj.likes_count
+                session.execute(
+                    update(PostAnalytics)
+                    .where(PostAnalytics.post_id == post_id)
+                    .values(likes_count = likes_count + 1)
+                )
+            session.commit()
+        else:
+            raise Exception("Post is already liked by the user.")
+        
+    except Exception as e:
+        logger.error(f"Unable to perform Like tweet due to {e}")
+        return None 
+
+@app.get(API_PREFIX + "/has_liked/{post_id}")
+async def check_like_exists(post_id: str, userToken: Annotated[str, Cookie()]):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken) 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            )
+        
+        result = session.scalars(
+            select(PostLikedBy)
+            .where(PostLikedBy.post_id == post_id)
+            .where(PostLikedBy.user_id == user.id)
+        )
+        post_liked_obj = result.one_or_none()
+        if post_liked_obj:
+            return Response(status_code=200, content="Post liked.")
+        else:
+            return Response(status_code=404, content="Post not liked yet.")
+        
+    except Exception as e:
+            logger.error(f"Unable to check like status due to {e}")
+            raise e
+
+@app.delete(API_PREFIX + "/unlike/{post_id}", status_code=204)
+async def unlike_post(post_id: str, userToken: Annotated[str, Cookie()]):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken) 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            )
+        # Check if the post is already liked.
+        result = session.scalars(
+            select(PostLikedBy)
+            .where(PostLikedBy.user_id == user.id)
+            .where(PostLikedBy.post_id == post_id)
+        )
+        post_liked_obj = result.one_or_none()
+        print("Post liked obj: ", post_liked_obj)
+        
+        if post_liked_obj:
+            session.delete(post_liked_obj)
+            session.commit()
+            #decrement the counter
+            result = session.scalars(
+                select(PostAnalytics)
+                .where(PostAnalytics.post_id == post_id)
+            )
+            post_analytics_obj = result.one_or_none()
+            if post_analytics_obj:
+                print("obj: ", post_analytics_obj)
+                likes_count = post_analytics_obj.likes_count
+                session.execute(
+                    update(PostAnalytics)
+                    .where(PostAnalytics.post_id == post_id)
+                    .values(likes_count = max(0, likes_count-1))
+                ) 
+            session.commit()
+        else:
+            raise Exception("Post is never liked by the user to be unliked.")
+    except Exception as e:
+            logger.error(f"Unable to Unlike tweet due to {e}")
+            return None
     
 @app.get(API_PREFIX + "/fs/{file_id}")
 async def get_file(file_id: str, userToken: Annotated[str, Cookie()]):

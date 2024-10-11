@@ -15,13 +15,15 @@ class Post(Base):
     content: Mapped[str] = mapped_column(String(900), nullable=False)
     content_type: Mapped[str] = mapped_column(String(20), default="text")
     
-    user_id: Mapped[uuid4] = mapped_column(ForeignKey("user.id"), nullable=False)
+    user_id: Mapped[uuid4] = mapped_column(Uuid(), nullable=False)
     
     created_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
     last_updated_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
     
+    '''
     user: Mapped["User"] = relationship(back_populates="posts")
     analytics: Mapped["PostAnalytics"] = relationship(back_populates="post")
+    '''
 
 class User(Base):
     __tablename__ = "user"
@@ -44,12 +46,12 @@ class User(Base):
     disabled: Mapped[bool] = mapped_column(Boolean, default=False)
     created_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
     last_updated_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
-
+    '''
     posts: Mapped[List["Post"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
     analytics: Mapped["UserAnalytics"] = relationship(back_populates="user")
-    
+    '''
 
 class PostLikedBy(Base):
     __tablename__ = "post_liked_by"
@@ -65,7 +67,9 @@ class PostAnalytics(Base):
     
     likes_count: Mapped[int] = mapped_column(Integer, nullable=False)
     
+    '''
     post: Mapped["Post"] = relationship(back_populates="analytics")
+    '''
 
 class UserFollowedBy(Base):
     __tablename__ = "user_followed_by"
@@ -82,5 +86,7 @@ class UserAnalytics(Base):
     follower_count: Mapped[int] = mapped_column(Integer, nullable=False)
     following_count: Mapped[int] = mapped_column(Integer, nullable=False)
     
+    '''
     user: Mapped["User"] = relationship(back_populates="analytics")
+    '''
     
