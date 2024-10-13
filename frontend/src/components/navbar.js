@@ -6,7 +6,7 @@ function Navbar () {
     const [userData, setUserData] = useState({
         "full_name": "Display Name",
         "username": "",
-        "display_picture_link": ""
+        "display_picture_link": "undefined"
     })
 
     const [postMode, setPostMode] = useState(false);

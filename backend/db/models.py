@@ -75,7 +75,7 @@ class UserFollowedBy(Base):
     __tablename__ = "user_followed_by"
     
     follower_id: Mapped[uuid4] = mapped_column(ForeignKey("user.id"), primary_key=True)
-    following_id: Mapped[uuid4] = mapped_column(ForeignKey("user.id"), primary_key=True) 
+    followed_id: Mapped[uuid4] = mapped_column(ForeignKey("user.id"), primary_key=True) 
     followed_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
 
 class UserAnalytics(Base):

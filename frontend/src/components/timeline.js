@@ -7,7 +7,9 @@ import MobileNavModal from './mobileNavModal';
 
 
 function Timeline () {
-    const [userData, setUserData] = React.useState({});
+    const [userData, setUserData] = React.useState({
+        "display_picture_link": "undefined"
+    });
 
     const [inputText, setInputText] = React.useState("");
     const [userTweets, setTweetState] = React.useState([]);

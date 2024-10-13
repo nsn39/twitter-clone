@@ -1,8 +1,9 @@
+import os
 import uuid
 import datetime
 from typing import Annotated
 
-from fastapi import FastAPI, Cookie, status, HTTPException, Request, UploadFile, Form, File
+from fastapi import FastAPI, Cookie, status, HTTPException, Request, UploadFile, Form, File, Response
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from loguru import logger
@@ -13,7 +14,7 @@ from pydantic import BaseModel
 from auth import router as auth_router
 from auth import get_current_user, get_user
 from db.db import session 
-from db.models import Post, User, PostLikedBy, PostAnalytics, UserAnalytics
+from db.models import Post, User, PostLikedBy, PostAnalytics, UserAnalytics, UserFollowedBy
 
 API_PREFIX = "/twitter-clone-api"
 USER_FILES_PATH = "/home/nishan/Practice/temp_fs/"
@@ -356,6 +357,209 @@ async def unlike_post(post_id: str, userToken: Annotated[str, Cookie()]):
             logger.error(f"Unable to Unlike tweet due to {e}")
             return None
     
+def get_id_from_username(input: str):
+    result = session.scalars(
+        select(User)
+        .where(User.username == input)
+    )
+    user_obj = result.one_or_none()
+    if user_obj:
+        return user_obj.id
+    else:
+        return None
+
+@app.get(API_PREFIX + "/is_following/{username}", status_code=200)
+async def does_user_follow_profile(username: str, userToken: Annotated[str, Cookie()]):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken) 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            )
+        
+        profile_id = get_id_from_username(username)
+        print("username: ", profile_id)
+        result = session.scalars(
+            select(UserFollowedBy)
+            .where(UserFollowedBy.follower_id == user.id)
+            .where(UserFollowedBy.followed_id == profile_id)
+        )
+        
+        user_followed_obj = result.one_or_none()
+        if user_followed_obj:
+            return Response(
+                status_code=200,
+                content=None
+            )
+        else:
+            return Response(
+                status_code=204,
+                content=None
+            )
+        
+    except Exception as e:
+        logger.error(f"Unable to check follow relation due to {e}")
+        raise e
+
+@app.post(API_PREFIX + "/follow/{username}", status_code=201)
+async def follow_profile(username: str, userToken: Annotated[str, Cookie()]):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken) 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            )
+        
+        # Check if user is already followed.
+        profile_id = get_id_from_username(username)
+        result = session.scalars(
+            select(UserFollowedBy)
+            .where(UserFollowedBy.follower_id == user.id)
+            .where(UserFollowedBy.followed_id == profile_id)
+        )
+        user_followed_obj = result.one_or_none()
+        if not user_followed_obj:
+            session.add(UserFollowedBy(follower_id=user.id, followed_id=profile_id))
+            session.commit()
+        else:
+            raise HTTPException(
+                status=201,
+                detail="The UserFollowedBy relation already exists."
+            )
+        
+        result = session.scalars(
+            select(UserAnalytics)
+            .where(UserAnalytics.user_id == user.id)
+        )
+        active_user_analytics_obj = result.one_or_none()
+        if not active_user_analytics_obj:
+            session.add(
+                UserAnalytics(
+                    user_id=user.id,
+                    follower_count=0,
+                    following_count=1
+                )
+            )
+        else:
+            following_count = active_user_analytics_obj.following_count
+            session.execute(
+                update(UserAnalytics)
+                .where(UserAnalytics.user_id == user.id)
+                .values(following_count = following_count + 1)
+            )
+        
+        result = session.scalars(
+            select(UserAnalytics)
+            .where(UserAnalytics.user_id == profile_id)
+        )
+        profile_user_analytics_obj = result.one_or_none()
+        if not profile_user_analytics_obj:
+            session.add(
+                UserAnalytics(
+                    user_id=profile_id,
+                    follower_count=1,
+                    following_count=0
+                )
+            )
+        else:
+            follower_count = profile_user_analytics_obj.follower_count
+            session.execute(
+                update(UserAnalytics)
+                .where(UserAnalytics.user_id == profile_id)
+                .values(follower_count = follower_count + 1)
+            )
+        session.commit()
+        return Response(
+            status_code=201,
+            content="UserFollowedBy relation created successfully."
+        )
+    except Exception as e:
+        logger.error(f"Unable to add a UserFollowedBy relation due to {e}")
+        raise e 
+
+@app.delete(API_PREFIX + "/unfollow/{username}", status_code=204)
+async def unfollow_profile(username: str, userToken: Annotated[str, Cookie()]):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken) 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            )
+        
+        profile_id = get_id_from_username(username)
+        # Check if user is already followed.
+        result = session.scalars(
+            select(UserFollowedBy)
+            .where(UserFollowedBy.follower_id == user.id)
+            .where(UserFollowedBy.followed_id == profile_id)
+        )
+        user_followed_obj = result.one_or_none()
+        if user_followed_obj:
+            session.delete(user_followed_obj)
+            session.commit()
+        else:
+            raise HTTPException(
+                status=401,
+                detail="The UserFollowedBy relation doesn't exist for it to be removed."
+            )
+        
+        result = session.scalars(
+            select(UserAnalytics)
+            .where(UserAnalytics.user_id == user.id)
+        )
+        active_user_analytics_obj = result.one_or_none()
+        if not active_user_analytics_obj:
+            logger.error(f"UserAnalyticsObj for user {user.id} not found.")
+        else:
+            following_count = active_user_analytics_obj.following_count
+            session.execute(
+                update(UserAnalytics)
+                .where(UserAnalytics.user_id == user.id)
+                .values(following_count = following_count - 1)
+            )
+        
+        result = session.scalars(
+            select(UserAnalytics)
+            .where(UserAnalytics.user_id == profile_id)
+        )
+        profile_user_analytics_obj = result.one_or_none()
+        profile_user_id = get_id_from_username(username)
+        if not profile_user_analytics_obj:
+            logger.error(f"UserAnalyticsObj for user {profile_user_id} not found.")
+        else:
+            follower_count = active_user_analytics_obj.follower_count
+            session.execute(
+                update(UserAnalytics)
+                .where(UserAnalytics.user_id == profile_user_id)
+                .values(follower_count = follower_count - 1)
+            )
+        session.commit()
+        return Response(
+            status_code=204
+        )
+        
+    except Exception as e:
+        logger.error(f"Unable to delete a UserFollowedBy relation due to {e}")
+        raise e
+    
 @app.get(API_PREFIX + "/fs/{file_id}")
 async def get_file(file_id: str, userToken: Annotated[str, Cookie()]):
     try:
@@ -369,6 +573,18 @@ async def get_file(file_id: str, userToken: Annotated[str, Cookie()]):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Authentication failed."
+            )
+        
+        if not file_id:
+            raise HTTPException(
+                status_code=401,
+                detail="No file ID mentioned in the path."
+            )
+            
+        if not os.path.exists(USER_FILES_PATH+file_id):
+            raise HTTPException(
+                status_code=404,
+                detail="No such file found in the file system."
             )
         
         return FileResponse(

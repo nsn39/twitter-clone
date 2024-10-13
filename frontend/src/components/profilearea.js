@@ -2,18 +2,19 @@ import React from "react";
 import { useEffect, useState, Fragment } from "react";
 import Tweet from "./tweet";
 import EditProfileModal from "./editProfileModal";
+import FollowButton from "./followButton";
 
 import { useNavigate } from "react-router-dom";
 
 function ProfileArea(props) {
     const [userExists, setUserExists] = React.useState(true);
-    const [userData, setUserData] = React.useState({});
+    const [userData, setUserData] = React.useState({
+        "display_picture_link": "undefined"
+    });
+    const [activeUserData, setActiveUserData] = React.useState({});
     const [userTweets, setTweetState] = React.useState([]);
     const [editMode, setEditMode] = useState(false);
 
-    const handleEditClick = () => {
-        setEditMode(true);
-    }
     const navigate = useNavigate();
 
     let backLink = () => {
@@ -21,6 +22,25 @@ function ProfileArea(props) {
     };
     
     useEffect(() => {
+        fetch("http://localhost:8000/twitter-clone-api/active_user", {
+            method: "GET",
+            credentials: "include"
+        }).then((res) => {
+            if (res.status == 200) {
+                return res.json();
+            }else {
+                return null;
+            }
+        }).then(data => {
+            if (data) {
+                console.log(data.fullname);
+                setActiveUserData({
+                    "username": data.username,
+                });
+                console.log("user data: ", userData);
+            }
+        })
+
         fetch("http://localhost:8000/twitter-clone-api/profile/" + props.userName, {
             method: "GET",
             credentials: "include"
@@ -50,13 +70,13 @@ function ProfileArea(props) {
             method: "GET",
             credentials: "include"
         })
-            .then((res) => {
-                return res.json();
-            })
-            .then((data) => {
-                console.log(data);
-                setTweetState(data);
-            });
+        .then((res) => {
+            return res.json();
+        })
+        .then((data) => {
+            console.log(data);
+            setTweetState(data);
+        });
     }, []);
 
     if (!userExists) {
@@ -91,7 +111,7 @@ function ProfileArea(props) {
             </div>
 
             <div className="flex flex-row justify-end p-2">
-                <button onClick={handleEditClick} className="font-bold p-2 border-[0.5px] border-gray-300 rounded-full hover:bg-gray-300">Edit profile</button>
+                <FollowButton currentUsername={activeUserData.username} profileUsername={userData.username} setEditModeFunction={setEditMode} />
             </div>
 
             <div className="flex flex-col mt-5 px-2">
@@ -116,7 +136,7 @@ function ProfileArea(props) {
                 <button className="flex-auto text-xs md:text-base p-4 font-bold text-gray-500 hover:bg-gray-300">Media</button>
                 <button className="flex-auto text-xs md:text-base p-4 font-bold text-gray-500 hover:bg-gray-300">Likes</button>
             </div>
-
+            
             
             {
                 userTweets && userTweets.map(({id, fullname, username, content, created_on, profile_pic_filename}) => (
