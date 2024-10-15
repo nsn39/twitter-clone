@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import MobileNavModal from './mobileNavModal';
 
 
-function Timeline () {
+function Timeline ({setPostMode, setActiveTweetData}) {
     const [userData, setUserData] = React.useState({
         "display_picture_link": "undefined"
     });
@@ -80,6 +80,8 @@ function Timeline () {
             "id": uuidv4(),
             "displayName": "Dummy",
             "userName": "Dummy",
+            "postType": "tweet",
+            "parentPostRef": null,
             "tweetText": inputText,
             "originalTimestamp": currentTimestampUTC.toISOString()
         };
@@ -166,8 +168,8 @@ function Timeline () {
 
 
             {
-                userTweets && userTweets.map(({id, fullname, username, content, created_on, profile_pic_filename}) => (
-                    <Tweet id={id} displayName={fullname} userName={"@" + username} tweetText={content} originalTimestamp={created_on} displayPicture={profile_pic_filename} />
+                userTweets && userTweets.map(({id, fullname, username, content, created_on, profile_pic_filename, post_type, parent_post}) => (
+                    <Tweet id={id} displayName={fullname} userName={"@" + username} tweetText={content} originalTimestamp={created_on} displayPicture={profile_pic_filename} setPostMode={setPostMode} setActiveTweetData={setActiveTweetData} postType={post_type} parentPost={parent_post} />
                 ))
             }
         </div>

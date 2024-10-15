@@ -12,14 +12,17 @@ class Post(Base):
     
     id: Mapped[uuid4] = mapped_column(Uuid(), primary_key=True)
     
-    content: Mapped[str] = mapped_column(String(900), nullable=False)
-    content_type: Mapped[str] = mapped_column(String(20), default="text")
+    content: Mapped[str] = mapped_column(String(900), nullable=True)
+    secondary_content_type: Mapped[str] = mapped_column(String(20), default="image", nullable=True)
+    secondary_content_file_id: Mapped[str] = mapped_column(String(100), nullable=True)
+    post_type: Mapped[str] = mapped_column(String(30), server_default="tweet")
     
     user_id: Mapped[uuid4] = mapped_column(Uuid(), nullable=False)
+    parent_post_ref: Mapped[uuid4] = mapped_column(Uuid(), nullable=True)
     
     created_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
     last_updated_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
-    
+    # tweet, retweet, quote-tweet, reply
     '''
     user: Mapped["User"] = relationship(back_populates="posts")
     analytics: Mapped["PostAnalytics"] = relationship(back_populates="post")

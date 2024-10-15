@@ -168,7 +168,12 @@ export default ProfileArea;
 //make tweets with photo upload option.
 //option to change cover photo in edit profile.
 //reset scroll when going to a post page.
-//fix that /fs/ endpoint error.
+
+//docker-compose include
+//same domain using nginx
+//mobile-reponsiveness and FE touchups..
+//deploy..
+
 
 //finally, onto messages.
 //messages sticky button, show messages on expanding.

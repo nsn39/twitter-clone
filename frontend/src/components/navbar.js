@@ -1,15 +1,13 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useEffect, useState, Fragment } from "react";
-import PostModal from "./postModal";
+import { useEffect, useState } from "react";
 
-function Navbar () {
+
+function Navbar ({setPostMode}) {
     const [userData, setUserData] = useState({
         "full_name": "Display Name",
         "username": "",
         "display_picture_link": "undefined"
     })
-
-    const [postMode, setPostMode] = useState(false);
 
     const handlePostClick = () => {
         setPostMode(true);
@@ -65,7 +63,6 @@ function Navbar () {
     }, []);
 
     return (
-        <Fragment>
         <div className="md:w-[25%] md:py-4 md:pl-16 md:h-screen bg-white sticky left-0 bottom-0 md:top-0">
             <div>
                 <a className="hidden md:block h-12 w-12 hover:bg-gray-200 rounded-full" href="/">
@@ -138,9 +135,7 @@ function Navbar () {
                 </button>
             </div>
         </div>
-
-        <PostModal isVisible={postMode} onClose={() => setPostMode(false)} />
-        </Fragment>
+        
     )
 }
 

@@ -98,7 +98,7 @@ async def get_tweets(request: Request):
     try:
         cookies = request.cookies
         user_token = cookies.get("userToken")
-        #print("cookie: ", user_token)
+        
         if not user_token:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -123,9 +123,29 @@ async def get_tweets(request: Request):
             )
         '''
         result = session.query(Post, User).join(User, Post.user_id == User.id).order_by(Post.created_on.desc())
-        #print(result)
+        
         tweets = [{**(tweet[1].__dict__), **(tweet[0].__dict__)} for tweet in result.all()]
-        #print("Tweets fetched: ", tweets)
+        
+        #TODO: take only the fields required in the FE and send as response. no need to **(tweet.__dict__)
+        for tweet in tweets:
+            tweet["parent_post"] = None
+            if parent_ref_id := tweet.get("parent_post_ref"):
+                result = session.scalars(
+                    select(Post)
+                    .where(Post.id == parent_ref_id)
+                )
+                parent_post_obj = result.one_or_none()
+                if parent_post_obj:
+                    #tweet["parent_post"] = parent_post_obj.__dict__
+                    user_id = parent_post_obj.user_id
+                    result = session.scalars(
+                        select(User)
+                        .where(User.id == user_id)
+                    )
+                    parent_post_user = result.one_or_none()
+                    if parent_post_user:
+                        tweet["parent_post"] = {**(parent_post_user.__dict__), **(parent_post_obj.__dict__)}
+
         return tweets    
     except Exception as e:
         logger.error(f"Unable to retrieve tweets file. due to {e}")
@@ -655,10 +675,12 @@ async def post_tweet(tweet: dict, request: Request):
                 detail="Unable to find logged in user.",
             )
         
-        logger.info("Tweet: ", tweet)
         tweet_text = tweet.get("tweetText")
-        if not tweet_text:
+        if tweet_text is None:
             raise Exception('No tweetText field in the object.')
+        post_type = tweet_post_type if (tweet_post_type := tweet.get("postType")) else "tweet"
+        parent_post_ref = tweet_parent_id if (tweet_parent_id := tweet.get("parentPostRef")) else None
+        
         '''
         with open("data/tweets.json", "r") as fp:
             tweets = json.loads(fp.read())
@@ -679,6 +701,8 @@ async def post_tweet(tweet: dict, request: Request):
             id=post_unique_id,
             user_id=user.id,
             content=tweet_text,
+            post_type=post_type,
+            parent_post_ref=parent_post_ref,
             created_on=datetime.datetime.fromisoformat(tweet_utc_timestamp),
             last_updated_on=datetime.datetime.fromisoformat(tweet_utc_timestamp)
         ))
