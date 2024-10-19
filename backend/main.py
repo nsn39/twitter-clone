@@ -3,7 +3,11 @@ import uuid
 import datetime
 from typing import Annotated
 
-from fastapi import FastAPI, Cookie, status, HTTPException, Request, UploadFile, Form, File, Response
+from fastapi import (
+    FastAPI, Cookie, status, HTTPException, 
+    Request, UploadFile, Form, File, Response,
+    BackgroundTasks
+)
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from loguru import logger
@@ -11,10 +15,20 @@ from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy import select, update
 from pydantic import BaseModel
 
+from endpoints.notifications import router as notfications_router
+from endpoints.websocket import router as websocket_router
 from auth import router as auth_router
 from auth import get_current_user, get_user
 from db.db import session 
-from db.models import Post, User, PostLikedBy, PostAnalytics, UserAnalytics, UserFollowedBy
+from db.models import (
+    Post, User, PostLikedBy, 
+    PostAnalytics, UserAnalytics, UserFollowedBy
+)
+from tasks.notifications import (
+    create_follow_notification,
+    create_like_notification,
+    create_post_notification
+)
 
 API_PREFIX = "/twitter-clone-api"
 USER_FILES_PATH = "/home/nishan/Practice/temp_fs/"
@@ -41,6 +55,8 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 app.include_router(auth_router, prefix=f"{API_PREFIX}/auth")
+app.include_router(notfications_router, prefix=f"{API_PREFIX}")
+app.include_router(websocket_router, prefix=f"{API_PREFIX}")
 
 @app.get(f"{API_PREFIX}/")
 async def root():
@@ -252,7 +268,11 @@ async def update_profile(
         raise e
     
 @app.post(API_PREFIX + "/like/{post_id}", status_code=201)
-async def like_post(post_id: str, userToken: Annotated[str, Cookie()]):
+async def like_post(
+    post_id: str, 
+    userToken: Annotated[str, Cookie()],
+    background_tasks: BackgroundTasks
+):
     try:
         if not userToken:
             raise HTTPException(
@@ -293,6 +313,7 @@ async def like_post(post_id: str, userToken: Annotated[str, Cookie()]):
                     .values(likes_count = likes_count + 1)
                 )
             session.commit()
+            background_tasks.add_task(create_like_notification, user, post_id)
         else:
             raise Exception("Post is already liked by the user.")
         
@@ -428,7 +449,11 @@ async def does_user_follow_profile(username: str, userToken: Annotated[str, Cook
         raise e
 
 @app.post(API_PREFIX + "/follow/{username}", status_code=201)
-async def follow_profile(username: str, userToken: Annotated[str, Cookie()]):
+async def follow_profile(
+    username: str, 
+    userToken: Annotated[str, Cookie()],
+    background_tasks: BackgroundTasks
+):
     try:
         if not userToken:
             raise HTTPException(
@@ -501,6 +526,8 @@ async def follow_profile(username: str, userToken: Annotated[str, Cookie()]):
                 .values(follower_count = follower_count + 1)
             )
         session.commit()
+        
+        background_tasks.add_task(create_follow_notification, user, profile_id)
         return Response(
             status_code=201,
             content="UserFollowedBy relation created successfully."
@@ -656,7 +683,11 @@ async def get_tweet(id: str, request: Request):
 
 # POST endpoint
 @app.post(f"{API_PREFIX}/tweet", status_code=201)
-async def post_tweet(tweet: dict, request: Request):
+async def post_tweet(
+    tweet: dict, 
+    request: Request,
+    background_tasks: BackgroundTasks
+):
     try:
         cookies = request.cookies
         user_token = cookies.get("userToken")
@@ -710,7 +741,10 @@ async def post_tweet(tweet: dict, request: Request):
         
         post_stmt = session.query(Post, User).join(User, Post.user_id == User.id).where(Post.id == post_unique_id)
         post_in_db = post_stmt.one_or_none()
-        post_dict = {**(post_in_db[1].__dict__), **(post_in_db[0].__dict__)}        
+        post_dict = {**(post_in_db[1].__dict__), **(post_in_db[0].__dict__)}
+        
+        # Queue a job for notification
+        background_tasks.add_task(create_post_notification, user, post_unique_id)
         return post_dict
         
     except Exception as e:

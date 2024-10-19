@@ -13,7 +13,7 @@ function Home() {
     return (
         <Fragment>
         <div className="flex flex-col-reverse md:flex-row mx-auto lg:w-[1366px] font-chirp">
-            <Navbar setPostMode={setPostMode}></Navbar>
+            <Navbar setPostMode={setPostMode} showNotificationCount={true}></Navbar>
 
             <Timeline setPostMode={setPostMode} setActiveTweetData={setActiveTweetData}></Timeline>
 

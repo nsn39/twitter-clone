@@ -1,6 +1,27 @@
+import { useEffect, useState } from "react";
 import NotificationCard from "./notificationCard";
 
 function NotificationArea() {
+    const [notificationsData, setNotificationData] = useState([]);
+
+    useEffect(() => {
+        fetch("http://localhost:8000/twitter-clone-api/notifications", {
+            method: "GET",
+            credentials: "include"
+        })
+        .then((res) => {
+            if (res.status == 200) {
+                return res.json();
+            }
+        })
+        .then((data) => {
+            console.log("notifications_data", data);
+            setNotificationData(data);
+        })
+
+    }, []);
+
+
     return (
         <div className="md:w-[46%] flex flex-col border-x-[0.5px] border-gray-200">
             <div className="flex flex-row p-3 justify-between">
@@ -16,11 +37,12 @@ function NotificationArea() {
                 <button className="flex-auto hover:bg-gray-200 p-4 font-bold text-gray-400">Mentions</button>
             </div>
 
-            <NotificationCard />
-            <NotificationCard />
-            <NotificationCard />
-            <NotificationCard />
-            <NotificationCard />
+            {
+                notificationsData && notificationsData.map(({id, event_type, fullname, username, profile_pic_filename, post_id, seen}) => (
+                    <NotificationCard id={id} eventType={event_type} fullName={fullname} userName={username} seen={seen} postID={post_id} displayPicture={profile_pic_filename} />
+                ))
+            }
+    
 
         </div>
     );

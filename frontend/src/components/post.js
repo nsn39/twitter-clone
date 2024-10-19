@@ -9,7 +9,7 @@ function Post(props) {
 
     return (
         <div className="flex flex-col-reverse md:flex-row mx-auto md:w-[1366px] font-chirp">
-            <Navbar></Navbar>
+            <Navbar showNotificationCount={true}></Navbar>
 
             <PostDetail tweetSlug={slug}></PostDetail>
             <p>{props.slug}</p>

@@ -93,3 +93,16 @@ class UserAnalytics(Base):
     user: Mapped["User"] = relationship(back_populates="analytics")
     '''
     
+class Notifications(Base):
+    __tablename__ = "notifications"
+    
+    id: Mapped[uuid4] = mapped_column(Uuid(), primary_key=True)
+    
+    origin_user_id: Mapped[uuid4] = mapped_column(ForeignKey("user.id"), nullable=False)
+    recipient_id: Mapped[uuid4] = mapped_column(ForeignKey("user.id"), nullable=False)
+    event_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    post_id: Mapped[uuid4] = mapped_column(ForeignKey("post.id"), nullable=True)
+    seen: Mapped[bool] = mapped_column(Boolean, default=False)
+    
+    created_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
+    last_updated_on: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())

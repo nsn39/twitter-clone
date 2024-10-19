@@ -9,7 +9,7 @@ function Profile() {
 
     return (
         <div className="flex flex-col-reverse md:flex-row mx-auto lg:w-[1366px] font-chirp">
-            <Navbar></Navbar>
+            <Navbar showNotificationCount={true}></Navbar>
 
             <ProfileArea userName={slug}/>
 
