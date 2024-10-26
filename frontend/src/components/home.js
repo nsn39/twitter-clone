@@ -8,7 +8,7 @@ import { Fragment, useState } from "react";
 
 function Home() {
     const [postMode, setPostMode] = useState(false);
-    const [activeTweetData, setActiveTweetData] = useState(null)
+    const [activeTweetData, setActiveTweetData] = useState(null);
 
     return (
         <Fragment>

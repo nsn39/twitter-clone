@@ -20,6 +20,10 @@ function ProfileArea(props) {
     let backLink = () => {
         navigate(-1);
     };
+
+    const updateTweetList = (newList) => {
+        setTweetState(newList);
+    };
     
     useEffect(() => {
         fetch("http://localhost:8000/twitter-clone-api/active_user", {
@@ -139,11 +143,10 @@ function ProfileArea(props) {
             
             
             {
-                userTweets && userTweets.map(({id, fullname, username, content, created_on, profile_pic_filename}) => (
-                    <Tweet id={id} displayName={fullname} userName={"@" + username} tweetText={content} originalTimestamp={created_on} displayPicture={profile_pic_filename} />
+                userTweets && userTweets.map(({id, fullname, username, content, created_on, profile_pic_filename, post_type, parent_post}) => (
+                    <Tweet key={id} id={id} displayName={fullname} userName={"@" + username} tweetText={content} originalTimestamp={created_on} displayPicture={profile_pic_filename} contextType="profile" postType={post_type} parentPost={parent_post} tweetList={userTweets} updateTweetList={updateTweetList} />
                 ))
             }
-            
 
         </div>
         <EditProfileModal isVisible={editMode} onClose={() => setEditMode(false)}/>
@@ -165,7 +168,8 @@ export default ProfileArea;
 //option to delete tweets from user profile.
 //make search bar usable to search other profiles based on name.
 //dynamic content for who to follow section.
-//make tweets with photo upload option.
+//complete the inner post page.
+//show like and retweet counts.
 //option to change cover photo in edit profile.
 //reset scroll when going to a post page.
 
@@ -178,3 +182,5 @@ export default ProfileArea;
 //finally, onto messages.
 //messages sticky button, show messages on expanding.
 //users should be able to message each other.
+
+//make tweets with photo upload option.

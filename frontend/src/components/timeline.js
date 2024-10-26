@@ -169,7 +169,7 @@ function Timeline ({setPostMode, setActiveTweetData}) {
 
             {
                 userTweets && userTweets.map(({id, fullname, username, content, created_on, profile_pic_filename, post_type, parent_post}) => (
-                    <Tweet id={id} displayName={fullname} userName={"@" + username} tweetText={content} originalTimestamp={created_on} displayPicture={profile_pic_filename} setPostMode={setPostMode} setActiveTweetData={setActiveTweetData} postType={post_type} parentPost={parent_post} />
+                    <Tweet key={id} id={id} displayName={fullname} userName={"@" + username} tweetText={content} originalTimestamp={created_on} displayPicture={profile_pic_filename} setPostMode={setPostMode} setActiveTweetData={setActiveTweetData} postType={post_type} parentPost={parent_post} contextType="timeline" setUserTweets={setTweetState} />
                 ))
             }
         </div>

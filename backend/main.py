@@ -12,7 +12,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from loguru import logger
 from starlette.middleware.cors import CORSMiddleware
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete
 from pydantic import BaseModel
 
 from endpoints.notifications import router as notfications_router
@@ -22,7 +22,7 @@ from auth import get_current_user, get_user
 from db.db import session 
 from db.models import (
     Post, User, PostLikedBy, 
-    PostAnalytics, UserAnalytics, UserFollowedBy
+    PostAnalytics, UserAnalytics, UserFollowedBy, Notifications
 )
 from tasks.notifications import (
     create_follow_notification,
@@ -92,11 +92,13 @@ async def get_user_tweets(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Unable to find logged in user.",
             )
-        result = (session.query(Post, User)
-                .join(User, Post.user_id == User.id)
-                .order_by(Post.created_on.desc())
-                .where(User.username == username)
-            )
+        result = (
+            session.query(Post, User)
+            .join(User, Post.user_id == User.id)
+            .order_by(Post.created_on.desc())
+            .where(User.username == username)
+            .where(Post.post_type != "reply")
+        )
         #print(result)
         tweets = [{**(tweet[1].__dict__), **(tweet[0].__dict__)} for tweet in result.all()]
         #print("Tweets fetched: ", tweets)
@@ -104,6 +106,42 @@ async def get_user_tweets(
     except Exception as e:
         logger.error(f"Unable to retrieve tweets file. due to {e}")
         return [] 
+    
+@app.get(f"{API_PREFIX}/replies/" + "{tweet_id}")
+async def get_tweet_replies(
+    tweet_id: str,
+    userToken: Annotated[str, Cookie()]
+):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken) 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            )
+            
+        replies_query = session.execute(
+            select(Post, User)
+            .join(User, Post.user_id == User.id)
+            .where(Post.post_type == "reply")
+            .where(Post.parent_post_ref == tweet_id)
+            .order_by(Post.created_on.desc())
+        )
+        replies_result = replies_query.fetchall()
+        if replies_result:
+            replies = [{**(item[1].__dict__), **(item[0].__dict__)} for item in replies_result]
+            return replies
+        else:
+            return []
+        
+    except Exception as e:
+        logger.error(f"Unable to send replies due to: {e}")
+        raise e
 
 # GET endpoint
 @app.get(f"{API_PREFIX}/tweets")
@@ -138,7 +176,12 @@ async def get_tweets(request: Request):
                 reverse=True
             )
         '''
-        result = session.query(Post, User).join(User, Post.user_id == User.id).order_by(Post.created_on.desc())
+        result = (
+            session.query(Post, User)
+            .join(User, Post.user_id == User.id)
+            .where(Post.post_type != "reply")
+            .order_by(Post.created_on.desc())
+        )
         
         tweets = [{**(tweet[1].__dict__), **(tweet[0].__dict__)} for tweet in result.all()]
         
@@ -167,9 +210,134 @@ async def get_tweets(request: Request):
         logger.error(f"Unable to retrieve tweets file. due to {e}")
         return []
 
+@app.delete(API_PREFIX + "/tweet/{post_id}", status_code=204)
+async def delete_tweet(
+    post_id: str,
+    userToken: Annotated[str, Cookie()]
+):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken) 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            )
+        
+        post_query = session.scalars(
+            select(Post)
+            .where(Post.id == post_id)
+        )
+        post_obj = post_query.one_or_none()
+        if post_obj.user_id != user.id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User doesn't have permission to delete this post.",
+            )
+        else:
+            # Delete all related replies, quotes and retweets.
+            '''
+            session.execute(
+                delete(Post)
+                .where(Post.parent_post_ref == post_obj.id)
+            )
+            '''
+            
+            session.execute(
+                delete(PostLikedBy)
+                .where(PostLikedBy.post_id == post_obj.id)
+            )
+            
+            session.execute(
+                delete(PostAnalytics)
+                .where(PostAnalytics.post_id == post_obj.id)
+            )
+            
+            session.execute(
+                delete(Notifications)
+                .where(Notifications.post_id == post_obj.id)
+            )
+            
+            session.delete(post_obj)
+            session.commit()
+        
+    except Exception as e:
+        logger.error(f"Unable to delete tweet due to: {e}")
+        raise e
+
+@app.get(API_PREFIX + "/who_to_follow", status_code=200)
+async def get_who_to_follow(
+    userToken: Annotated[str, Cookie()]
+):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            )
+        
+        follow_rec_query = session.scalars(
+            select(User)
+            .where(User.id != user.id)
+            .limit(4)
+        )
+        follow_rec_results = follow_rec_query.fetchall()
+        if len(follow_rec_results) > 0:
+            return [item.__dict__ for item in follow_rec_results]
+        else:
+            return []
+        
+    except Exception as e:
+        logger.error("Unable to give recommendations due to: {e}");
+
+@app.get(API_PREFIX + "/search/{search_input}", status_code=200)
+async def get_search_results(
+    search_input: str,
+    userToken: Annotated[str, Cookie()]
+):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            ) 
+            
+        search_fullname_query = session.scalars(
+            select(User)
+            .where(User.id != user.id)
+            .where(User.fullname.ilike(f"{search_input}%"))
+        )
+        search_fullname_results = search_fullname_query.fetchall()
+        if len(search_fullname_results) > 0:
+            return [item.__dict__ for item in search_fullname_results]
+        else:
+            return []
+    
+    except Exception as e:
+        logger.error(f"Unable to send search results due to: {e}")
+        raise e
+    
 @app.get(API_PREFIX + "/active_user/", status_code=200)
 async def get_user_profile(
-    userToken: Annotated[str, Cookie()]  
+    userToken: Annotated[str, Cookie()]
 ):
     try:
         if not userToken:

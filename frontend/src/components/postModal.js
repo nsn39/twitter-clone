@@ -29,21 +29,21 @@ function PostModal({isVisible, onClose, activeTweetData, setActiveTweetData}) {
         };
 
         fetch('http://localhost:8000/twitter-clone-api/tweet', options)
-            .then((res) => {
-                if (res.status == 201) {
-                    return res.json();
-                }else {
-                    return null;
-                }
-            })
-            .then((data) => {
-                if (data) {
-                    //setTweetState([data, ...userTweets]);
-                    setInputText("");
-                    //console.log("userTweets: ", userTweets);
-                }
-            })
-            .catch(error => console.error(error));
+        .then((res) => {
+            if (res.status == 201) {
+                return res.json();
+            }else {
+                return null;
+            }
+        })
+        .then((data) => {
+            if (data) {
+                //setTweetState([data, ...userTweets]);
+                setInputText("");
+                //console.log("userTweets: ", userTweets);
+            }
+        })
+        .catch(error => console.error(error));
 
         deleteStateAndClose();
     }

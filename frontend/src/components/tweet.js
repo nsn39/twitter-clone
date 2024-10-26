@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOutsideClick } from '../hooks/useOutsideClick';
+import beautifyTimestamp from '../utils/beautifyDateTime';
 
 function Tweet(props) {
     const [tweetData, setTweetData] = useState({
@@ -27,8 +28,13 @@ function Tweet(props) {
         btn_area.classList.add("hidden");
     });
 
+    const optionsButtonRef = useOutsideClick(() => {
+        let div_area = document.getElementById("post_options_div_" + tweetElementId);
+        div_area.classList.add("hidden");
+    });
+
     let handleClick = () => {
-        navigate("/tweet/" + tweetData.id)
+        navigate("/tweet/" + tweetData.id);
     }
 
     let handleInnerTweetClick = (e) => {
@@ -38,66 +44,7 @@ function Tweet(props) {
     }
 
     //#e01b24
-    const beautifyTimestamp = (originalTimestamp) => {
-        const monthIntToStr = {
-            1: "Jan",
-            2: "Feb",
-            3: "Mar",
-            4: "Apr",
-            5: "May",
-            6: "Jun",
-            7: "Jul",
-            8: "Aug",
-            9: "Sep",
-            10: "Oct",
-            11: "Nov",
-            12: "Dec"
-        }
-
-        const timestampObj = new Date(originalTimestamp);
-        const timestampValue = timestampObj.valueOf();
-        const dateObj = new Date(timestampValue);
-
-        const year = dateObj.getFullYear();
-        const month = dateObj.getMonth();
-        const date = dateObj.getDate();
-        const hours = dateObj.getHours();
-        const minutes = dateObj.getMinutes();
-        const seconds = dateObj.getSeconds();
-
-        console.log(year, month, date, hours, minutes, seconds);
-
-        const currentTimestampValue = Date.now();
-
-        const timestampDifferenceSeconds = (currentTimestampValue - timestampValue)/1000.0;
-        var beautifiedTimeAgo = "";
-
-        if (timestampDifferenceSeconds < 59) {
-            //seconds
-            beautifiedTimeAgo = (Math.floor(timestampDifferenceSeconds)).toString() + " sec"
-        }
-        else if (timestampDifferenceSeconds < 3599) {
-            //minutes
-            beautifiedTimeAgo = (Math.floor(timestampDifferenceSeconds / 60.0)).toString() + " min"
-        }
-        else if (timestampDifferenceSeconds < 86399) {
-            //hours
-            beautifiedTimeAgo = (Math.floor(timestampDifferenceSeconds / 3600.0)).toString() + "h"
-        }
-        else if (timestampDifferenceSeconds < 1036799) {
-            //within same year; show only month and day
-            beautifiedTimeAgo = monthIntToStr[month] + " " + date;
-        }
-        else {
-            //show full date
-            beautifiedTimeAgo = monthIntToStr[month] + " " + date + " ," + year;
-        }
-        const beautifiedTimeAgoHover = hours + ":" + minutes + " - " + date + " " + monthIntToStr[month] + ", " + year;
-        return {
-            "beautifiedTimeAgo": beautifiedTimeAgo,
-            "beautifiedTimeAgoHover": beautifiedTimeAgoHover
-        };
-    }
+    
     const onMouseOverPic = () => {
         let dropdown = document.getElementById(tweetElementId);
         dropdown.classList.toggle("hidden");
@@ -122,6 +69,12 @@ function Tweet(props) {
         e.stopPropagation();
         let dropdown = document.getElementById("retweet_icon_" + tweetElementId);
         dropdown.classList.remove("hidden");
+    }
+
+    const onPostOptionsClick = (e) => {
+        e.stopPropagation();
+        let div_element = document.getElementById("post_options_div_" + tweetElementId);
+        div_element.classList.toggle("hidden");
     }
 
     const onMouseOverLike = () => {
@@ -195,7 +148,6 @@ function Tweet(props) {
     }
 
     const colorLikeButton = () => {
-        console.log("Calling colorLikeButton with: ", tweetElementId);
         let svg_element = document.querySelector("#like_svg_" + tweetElementId);
         svg_element.setAttribute("fill", "#e01b24");
         let svg_element_path = document.querySelector("#like_svg_" + tweetElementId + " > g > path");
@@ -292,6 +244,26 @@ function Tweet(props) {
         retweetSubmitter();
     }
 
+    const onDeleteClick = (e) => {
+        e.stopPropagation();
+        //e.preventDefault();
+        fetch("http://localhost:8000/twitter-clone-api/tweet/" + props.id, {
+            method: "DELETE",
+            credentials: "include"
+        })
+        .then((res) => {
+            if (res.status == 204) {
+                //console.log(props.tweetList.length);
+                const updatedTweets = props.tweetList.filter(item => item.id !== props.id);
+                console.log(updatedTweets);
+                props.updateTweetList([...updatedTweets]);
+            }
+            else {
+                console.log("Delete failed");
+            }
+        })
+    }
+
     const QuoteTweetComponent = () => {
         if (props.postType != "quote"){
             return null;
@@ -339,6 +311,40 @@ function Tweet(props) {
         );
     }
 
+    const TweetOptionsDiv = () => {
+        if (props.contextType == "profile") {
+            return (
+                <div ref={optionsButtonRef} id={"post_options_div_" + tweetElementId} className='w-64 absolute top-[0px] right-[0px] hidden flex flex-col rounded-2xl bg-white overflow-hidden shadow-2xl border-[0.5px] border-slate-150'>
+                    <button onClick={onDeleteClick} className='px-6 py-2 text-base text-red-500 font-bold hover:bg-red-100'>
+                        Delete tweet
+                    </button>
+
+                    <button className='px-6 py-2 text-base font-bold hover:bg-slate-100 '>
+                        Report tweet
+                    </button>
+
+                    <button className='px-6 py-2 text-base font-bold hover:bg-slate-100 '>
+                        Request Community Note
+                    </button>
+                </div>
+            );
+        }
+        else {
+            return (
+                <div ref={optionsButtonRef} id={"post_options_div_" + tweetElementId} className='w-64 absolute top-[0px] right-[0px] hidden flex flex-col rounded-2xl bg-white overflow-hidden shadow-2xl border-[0.5px] border-slate-150'>
+                    <button className='px-6 py-2 text-base font-bold hover:bg-slate-100 '>
+                        Report tweet
+                    </button>
+
+                    <button className='px-6 py-2 text-base font-bold hover:bg-slate-100 '>
+                        Request Community Note
+                    </button>
+                </div>
+            );
+            
+        }
+    }
+
     useEffect(() => {
         if (props.postType == "retweet") {
             setTweetData({
@@ -378,20 +384,30 @@ function Tweet(props) {
             <div className='flex flex-row'>
                 <img className='flex-none h-10 w-10 rounded-full mr-2' src={"http://localhost:8000/twitter-clone-api/fs/" + tweetData.displayPicture} />
                 <div className='flex-grow'>
-                    <div className="flex flex-row items-center">
-                        <p className="font-bold hover:underline mr-1">
-                            <a href="./">{tweetData.displayName}</a> 
-                        </p>
-                        <p className="flex flex-row text-base text-gray-400 mr-1">
-                            <p className='mr-1'>&bull;</p><a href="./">{tweetData.userName}</a>
-                        </p>
-                        <p className='text-sm text-gray-400'>&bull;</p>
-                        <div className='relative w-auto'>
-                            <p onMouseOver={onMouseOverPic} onMouseOut={onMouseOutPic} className='text-sm text-gray-400 hover:underline'>{dateInfo.beautifiedTimeAgo}</p>
+                    <div className="flex flex-row items-center justify-between">
+                        <div className='flex flex-row items-center'>
+                            <p className="font-bold hover:underline mr-1">
+                                <a href="./">{tweetData.displayName}</a> 
+                            </p>
+                            <p className="flex flex-row text-base text-gray-400 mr-1">
+                                <p className='mr-1'>&bull;</p><a href="./">{tweetData.userName}</a>
+                            </p>
+                            <p className='text-sm text-gray-400'>&bull;</p>
+                            <div className='relative w-auto'>
+                                <p onMouseOver={onMouseOverPic} onMouseOut={onMouseOutPic} className='text-sm text-gray-400 hover:underline'>{dateInfo.beautifiedTimeAgo}</p>
 
-                            <div id={tweetElementId} className="w-[130px] flex items-center justify-center absolute hidden top-[20px] left-[0px] p-1 bg-slate-800 opacity-80 rounded-md">
-                                <p className="text-xs text-white">{dateInfo.beautifiedTimeAgoHover}</p>
+                                <div id={tweetElementId} className="w-[130px] flex items-center justify-center absolute hidden top-[20px] left-[0px] p-1 bg-slate-800 opacity-80 rounded-md">
+                                    <p className="text-xs text-white">{dateInfo.beautifiedTimeAgoHover}</p>
+                                </div>
                             </div>
+                        </div>
+                        
+                        <div className='relative'>
+                            <div onClick={onPostOptionsClick} className='h-9 w-9 rounded-full flex flex-col items-center justify-center hover:bg-sky-200'>
+                                <svg className="h-4 w-4" fill="#000000" height="200px" width="200px" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path class="cls-1" d="M8,6.5A1.5,1.5,0,1,1,6.5,8,1.5,1.5,0,0,1,8,6.5ZM.5,8A1.5,1.5,0,1,0,2,6.5,1.5,1.5,0,0,0,.5,8Zm12,0A1.5,1.5,0,1,0,14,6.5,1.5,1.5,0,0,0,12.5,8Z"></path> </g></svg>
+                            </div>
+
+                            <TweetOptionsDiv />
                         </div>
                         
                     </div>
