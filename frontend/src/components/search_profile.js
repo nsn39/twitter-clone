@@ -1,6 +1,7 @@
 function SearchProfile (props) {
 
-    const handleDeleteClick = () => {
+    const handleDeleteClick = (e) => {
+        e.stopPropagation();
         const newResult = props.searchResult.filter((item) => item.id !== props.id);
         props.setSearchResult([...newResult]);
     };

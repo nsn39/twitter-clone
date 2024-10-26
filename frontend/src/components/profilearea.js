@@ -171,7 +171,8 @@ export default ProfileArea;
 //complete the inner post page.
 //show like and retweet counts.
 //option to change cover photo in edit profile.
-//reset scroll when going to a post page.
+//fix reply button in post page.
+//set up .envs for dev and prod react envs, run npm build
 
 //docker-compose include
 //same domain using nginx

@@ -288,6 +288,8 @@ function PostDetail(props) {
     // search for the post in JSON file.
     //id, fullname, username, content, created_on, profile_pic_filename, post_type, parent_post
     useEffect(() => {
+        window.scrollTo(0, 0);
+
         fetch("http://localhost:8000/twitter-clone-api/tweet/" + props.tweetSlug, {
             "method": "GET",
             credentials: "include"

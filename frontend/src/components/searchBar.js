@@ -1,12 +1,25 @@
 import { useState } from "react";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 import SearchProfile from "./search_profile";
 
 function SearchBar() {
     const [inputText, setInputText] = useState("");
     const [searchResult, setSearchResult] = useState([]);
 
+    const handleClearAll = () => {
+        setSearchResult([]);
+    }
+
     let inputHandler = (e) => {
         setInputText(e.target.value);
+
+        var dropdown = document.getElementById("dropdown");
+        if (inputText == "") {
+            dropdown.classList.add("hidden");
+        }
+        else {
+            dropdown.classList.remove("hidden");
+        }
 
         fetch("http://localhost:8000/twitter-clone-api/search/" + inputText, {
             method: "GET",
@@ -22,29 +35,30 @@ function SearchBar() {
         })
         .then((data) => {
             if (data) {
+                console.log("search result: ", data);
                 setSearchResult(data);
             }
         })
     }
 
-    const toggleDropdown = () => {
+    const ref = useOutsideClick(() => {
         let dropdown = document.querySelector("#search-bar #dropdown");
-        dropdown.classList.toggle("hidden");
-    }
+        dropdown.classList.add("hidden");
+    });
 
     return (
         <div className="relative" id="search-bar">
             <div className="flex">
-                <input onBlur={toggleDropdown} onFocus={toggleDropdown} placeholder="Search" type="text" className="flex-auto bg-gray-300 focus:outline focus:outline-sky-300 h-18 py-3 px-6 rounded-full" value={inputText} onChange={inputHandler} />
+                <input placeholder="Search" type="text" className="flex-auto bg-gray-300 focus:outline focus:outline-sky-300 h-18 py-3 px-6 rounded-full" value={inputText} onChange={inputHandler} />
             </div>
 
-            <div id="dropdown" className="absolute rounded border-[1px] border-sky-300 top-[60px] w-[350px] shadow-md hidden bg-white">
+            <div ref={ref} id="dropdown" className="absolute rounded border-[1px] border-sky-300 top-[60px] w-[350px] shadow-md hidden bg-white">
                 <div className="flex flex-row justify-between items-center h-12">
                     <h3 className="font-bold text-xl pl-4">Recent</h3>
 
-                    <div className="p-2 rounded-full hover:bg-sky-100 mr-5">
-                        <p className="font-bold text-sky-400">Clear all</p>
-                    </div>
+                    <button onClick={handleClearAll} className="p-2 rounded-full hover:bg-sky-100 mr-5 font-bold text-sky-400">
+                        Clear all
+                    </button>
                 </div>
 
                 {
