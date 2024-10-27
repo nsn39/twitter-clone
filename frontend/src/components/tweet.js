@@ -12,6 +12,9 @@ function Tweet(props) {
         "displayPicture": props.displayPicture,
         "originalTimestamp": props.originalTimestamp
     });
+    const [tweetAnalytics, setTweetAnalytics] = useState({
+        "likes_count": 0
+    });
 
     const simplifyUUID = (str) => {
         return str.replaceAll("-", "");
@@ -22,6 +25,7 @@ function Tweet(props) {
     const [tweetElementId, setTweetElementId] = useState(simplifyUUID(props.id));
     const [innerTweetID, setInnerTweetID] = useState("");
     const [isLiked, setIsLiked] = useState(false);
+    const [isRetweeted, setIsRetweeted] = useState(false);
 
     const ref = useOutsideClick(() => {
         let btn_area = document.getElementById("retweet_icon_" + tweetElementId);
@@ -169,6 +173,7 @@ function Tweet(props) {
             //FE changes.
             colorLikeButton();
             setIsLiked(true);
+            setTweetAnalytics((prevFormData) => ({ ...prevFormData, ["likes_count"]: (tweetAnalytics.likes_count + 1) }));
             //BE changes
             fetch("http://localhost:8000/twitter-clone-api/like/" + tweetData.id, {
                 method: "POST",
@@ -184,6 +189,7 @@ function Tweet(props) {
         else {
             uncolorLikeButton();
             setIsLiked(false);
+            setTweetAnalytics((prevFormData) => ({ ...prevFormData, ["likes_count"]: (tweetAnalytics.likes_count - 1) }));
             fetch("http://localhost:8000/twitter-clone-api/unlike/" + tweetData.id, 
                 {
                     method: "DELETE",
@@ -200,6 +206,9 @@ function Tweet(props) {
     };
 
     let retweetSubmitter = () => {
+        if (isRetweeted) {
+            return;
+        }
         let postType = "retweet";
         
         const currentTimestampUTC = new Date(Date.now());
@@ -268,6 +277,16 @@ function Tweet(props) {
         if (props.postType != "quote"){
             return null;
         }
+        if (props.parentPost == null) {
+            return (
+                <div className="w-full flex flex-col border-[0.5px] border-slate-400 rounded-2xl p-4 mt-2 hover:bg-gray-300">
+                    <p className='font-bold text-gray-400'>
+                        This tweet has been deleted by the user.
+                    </p>
+                </div>
+            )
+        }
+
         let originalTweetData = props.parentPost;
         setInnerTweetID(originalTweetData.id);
         let picURL = "http://localhost:8000/twitter-clone-api/fs/" + originalTweetData.profile_pic_filename;
@@ -345,6 +364,7 @@ function Tweet(props) {
         }
     }
 
+
     useEffect(() => {
         if (props.postType == "retweet") {
             setTweetData({
@@ -371,11 +391,37 @@ function Tweet(props) {
         })
         .then((res) => {
             if (res.status == 200) {
-                console.log("tweet_el_id: ", tweetElementId);
                 colorLikeButton();
                 setIsLiked(true);
             }
         })
+
+        fetch("http://localhost:8000/twitter-clone-api/has_retweeted/" + tweetData.id, {
+            method: "GET",
+            credentials: "include"
+        })
+        .then((res) => {
+            if (res.status == 200){
+                onMouseOverRetweet();
+                setIsRetweeted(true);
+            }
+        })
+
+        fetch("http://localhost:8000/twitter-clone-api/post_analytics/" + props.id, {
+            method: "GET",
+            credentials: "include"
+        })
+        .then((res) => {
+            if (res.status == 200) {
+                return res.json();
+            }
+        })
+        .then((data) => {
+            if (data) {
+                setTweetAnalytics(data);
+            }
+        })
+
     }, [tweetData.id, tweetData.originalTimestamp, tweetElementId]);
 
     return (
@@ -439,10 +485,14 @@ function Tweet(props) {
                             </div>
                         </div>
 
-                        <div className='flex flex-row w-full'>
+                        <div className='flex flex-row w-full text-gray-300 hover:text-red-400'>
                             <button onClick={handleLikeClick} onMouseOver={onMouseOverLike} onMouseOut={onMouseOutLike} className='h-9 w-9 flex items-center justify-center hover:bg-red-200 rounded-full'>
                                 <svg id={"like_svg_" + tweetElementId} className='hover:bg-red-200 hover:rounded-full h-6 w-6' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M12 6.00019C10.2006 3.90317 7.19377 3.2551 4.93923 5.17534C2.68468 7.09558 2.36727 10.3061 4.13778 12.5772C5.60984 14.4654 10.0648 18.4479 11.5249 19.7369C11.6882 19.8811 11.7699 19.9532 11.8652 19.9815C11.9483 20.0062 12.0393 20.0062 12.1225 19.9815C12.2178 19.9532 12.2994 19.8811 12.4628 19.7369C13.9229 18.4479 18.3778 14.4654 19.8499 12.5772C21.6204 10.3061 21.3417 7.07538 19.0484 5.17534C16.7551 3.2753 13.7994 3.90317 12 6.00019Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                             </button>
+
+                            {
+                                (tweetAnalytics.likes_count > 0) && <p className='ml-1 text-sm'>{tweetAnalytics.likes_count}</p>
+                            }
                         </div>
 
                         <div className='flex flex-row w-full'>

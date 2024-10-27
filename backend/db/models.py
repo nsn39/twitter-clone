@@ -68,7 +68,10 @@ class PostAnalytics(Base):
     
     post_id: Mapped[uuid4] = mapped_column(ForeignKey("post.id"), primary_key=True)
     
-    likes_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    likes_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    retweets_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    quotes_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    replies_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
     
     '''
     post: Mapped["Post"] = relationship(back_populates="analytics")
@@ -88,6 +91,7 @@ class UserAnalytics(Base):
 
     follower_count: Mapped[int] = mapped_column(Integer, nullable=False)
     following_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    posts_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
     
     '''
     user: Mapped["User"] = relationship(back_populates="analytics")

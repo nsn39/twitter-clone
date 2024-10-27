@@ -15,6 +15,10 @@ function PostDetail(props) {
         "postType": "",
         "parentPost": ""
     });
+    const [tweetAnalytics, setTweetAnalytics] = useState({
+        "likes_count": 0
+    });
+    const [activeUserData, setActiveUserData] = useState({});
     const simplifyUUID = (str) => {
         return str.replaceAll("-", "");
     }
@@ -142,10 +146,13 @@ function PostDetail(props) {
     }
 
     const onReplySend = () => {
+        const currentTimestampUTC = new Date(Date.now());
+
         const newTweet = {
             "postType": "reply",
             "parentPostRef": tweetData.id,
-            "tweetText": replyText
+            "tweetText": replyText,
+            "originalTimestamp": currentTimestampUTC.toISOString()
         };
     
         const options = {
@@ -167,7 +174,8 @@ function PostDetail(props) {
         })
         .then((data) => {
             if (data) {
-                //console.log("new");
+                setTweetReplies([data, ...tweetReplies]);
+                setReplyText("");
             }
         })
         .catch(error => console.error(error));
@@ -195,6 +203,7 @@ function PostDetail(props) {
             //FE changes.
             colorLikeButton();
             setIsLiked(true);
+            setTweetAnalytics((prevFormData) => ({ ...prevFormData, ["likes_count"]: (tweetAnalytics.likes_count + 1) }));
             //BE changes
             fetch("http://localhost:8000/twitter-clone-api/like/" + props.id, {
                 method: "POST",
@@ -204,12 +213,14 @@ function PostDetail(props) {
                 if (res.status != 201) {
                     //rever FE changes.
                     uncolorLikeButton();
+
                 }
             })
         }
         else {
             uncolorLikeButton();
             setIsLiked(false);
+            setTweetAnalytics((prevFormData) => ({ ...prevFormData, ["likes_count"]: (tweetAnalytics.likes_count - 1) }));
             fetch("http://localhost:8000/twitter-clone-api/unlike/" + props.id, 
                 {
                     method: "DELETE",
@@ -285,6 +296,79 @@ function PostDetail(props) {
         }
     }
 
+    const fetchActiveUserDetails = () => {
+        fetch("http://localhost:8000/twitter-clone-api/active_user", {
+            method: "GET",
+            credentials: "include"
+        }).then((res) => {
+            if (res.status == 200) {
+                return res.json();
+            }else {
+                return null;
+            }
+        }).then(data => {
+            if (data) {
+                setActiveUserData({
+                    "full_name": data.fullname,
+                    "username": data.username,
+                    "displayPicture": data.profile_pic_filename
+                });
+            }
+        })
+    }
+
+    let handleInnerTweetClick = (e) => {
+        e.stopPropagation();
+        let parentPostID = tweetData.parentPost.id;
+        navigate("/tweet/" + parentPostID);
+    }
+
+    const QuoteTweetComponent = () => {
+        if (tweetData.postType != "quote"){
+            return null;
+        }
+        let originalTweetData = tweetData.parentPost;
+
+        if (originalTweetData == null) {
+            return (
+                <div className="w-full flex flex-col border-[0.5px] border-slate-400 rounded-2xl p-4 mt-2 hover:bg-gray-300">
+                    <p className='font-bold text-gray-400'>
+                        This tweet has been deleted by the user.
+                    </p>
+                </div>
+            )
+        }
+
+        setInnerTweetID(originalTweetData.id);
+        let picURL = "http://localhost:8000/twitter-clone-api/fs/" + originalTweetData.profile_pic_filename;
+        let createdOn = beautifyTimestamp(originalTweetData.created_on);
+
+        return (
+            <div onClick={handleInnerTweetClick} className="w-full flex flex-col border-[0.5px] border-slate-400 rounded-2xl p-4 mt-2 hover:bg-gray-300">
+                <div className="flex flex-row items-center mb-2">
+                    <img className='flex-none h-6 w-6 rounded-full mr-1' src={picURL} />
+                    <p className="font-bold hover:underline mr-1">
+                        <a href="./">{originalTweetData.fullname}</a> 
+                    </p>
+                    <p className="flex flex-row text-base text-gray-400 mr-1">
+                        <p className='mr-1'>&bull;</p>
+                        <a href="./">{"@" + originalTweetData.username }</a>
+                    </p>
+                    <p className='text-gray-400 mr-1'>&bull;</p>
+                    <div className='relative w-auto'>
+                        <p onMouseOver={onMouseOverInnerTweetDate} onMouseOut={onMouseOutInnerTweetDate} className='text-sm text-gray-400 hover:underline'>{createdOn.beautifiedTimeAgo}</p>
+
+                        <div id={originalTweetData.id} className="w-[130px] flex items-center justify-center absolute hidden top-[20px] left-[0px] p-1 bg-slate-800 opacity-80 rounded-md">
+                            <p className="text-xs text-white">{createdOn.beautifiedTimeAgoHover}</p>
+                        </div>
+                    </div>
+                
+                </div>
+                <p className="border-b-200 text-base">{originalTweetData.content}</p>
+            </div>
+        );
+    };
+
     // search for the post in JSON file.
     //id, fullname, username, content, created_on, profile_pic_filename, post_type, parent_post
     useEffect(() => {
@@ -331,6 +415,34 @@ function PostDetail(props) {
             }
         })
 
+        fetch("http://localhost:8000/twitter-clone-api/has_liked/" + props.tweetSlug, {
+            method: "GET",
+            credentials: "include"
+        })
+        .then((res) => {
+            if (res.status == 200) {
+                colorLikeButton();
+                setIsLiked(true);
+            }
+        })
+
+        fetch("http://localhost:8000/twitter-clone-api/post_analytics/" + props.tweetSlug, {
+            method: "GET",
+            credentials: "include"
+        })
+        .then((res) => {
+            if (res.status == 200) {
+                return res.json();
+            }
+        })
+        .then((data) => {
+            if (data) {
+                setTweetAnalytics(data);
+            }
+        })
+
+        fetchActiveUserDetails();
+
     }, []);
 
     return (
@@ -352,6 +464,7 @@ function PostDetail(props) {
 
             <div className="flex flex-col px-4 mt-2">
                 <p className="mb-2">{tweetData.tweetText}</p>
+                <QuoteTweetComponent />
                 <p className="text-slate-400  pb-2">{dateInfo.beautifiedTimeAgoPost}</p>
 
                 <div className='flex flex-row p-2 items-center justify-stretch border-y-[0.1px] border-gray-300'>
@@ -377,10 +490,14 @@ function PostDetail(props) {
                         </div>
                     </div>
 
-                    <div className='flex flex-row w-full'>
+                    <div className='flex flex-row w-full text-gray-300 hover:text-red-400'>
                         <button onClick={handleLikeClick} onMouseOver={onMouseOverLike} onMouseOut={onMouseOutLike} className='h-9 w-9 flex items-center justify-center hover:bg-red-200 rounded-full'>
                             <svg id={"like_svg_" + tweetElementId} className='hover:bg-red-200 hover:rounded-full h-6 w-6' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M12 6.00019C10.2006 3.90317 7.19377 3.2551 4.93923 5.17534C2.68468 7.09558 2.36727 10.3061 4.13778 12.5772C5.60984 14.4654 10.0648 18.4479 11.5249 19.7369C11.6882 19.8811 11.7699 19.9532 11.8652 19.9815C11.9483 20.0062 12.0393 20.0062 12.1225 19.9815C12.2178 19.9532 12.2994 19.8811 12.4628 19.7369C13.9229 18.4479 18.3778 14.4654 19.8499 12.5772C21.6204 10.3061 21.3417 7.07538 19.0484 5.17534C16.7551 3.2753 13.7994 3.90317 12 6.00019Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                         </button>
+
+                        {
+                            (tweetAnalytics.likes_count > 0) && <p className='ml-1 text-sm'>{tweetAnalytics.likes_count}</p>
+                        }
                     </div>
 
                     <div className='flex flex-row w-full'>
@@ -392,7 +509,7 @@ function PostDetail(props) {
             </div>
 
             <div className='flex flex-row p-4 border-b-[0.1px] border-slate-300'>
-                <img src={"http://localhost:8000/twitter-clone-api/fs/" + tweetData.displayPicture} className='h-10 w-10 rounded-full'></img>
+                <img src={"http://localhost:8000/twitter-clone-api/fs/" + activeUserData.displayPicture} className='h-10 w-10 rounded-full'></img>
                 <textarea className='w-full h-20 mx-2 outline-none text-xl resize-none' placeholder='Post your reply' onChange={replyInputHandler} value={replyText}></textarea>
 
                 <ReplyButton />

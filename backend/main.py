@@ -143,6 +143,69 @@ async def get_tweet_replies(
         logger.error(f"Unable to send replies due to: {e}")
         raise e
 
+@app.get(f"{API_PREFIX}/post_analytics/" + "{post_id}")
+async def get_post_analytics(
+    post_id: str,
+    userToken: Annotated[str, Cookie()]
+):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken) 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            ) 
+        
+        post_analytics_query = session.scalars(
+            select(PostAnalytics)
+            .where(PostAnalytics.post_id == post_id)
+        )
+        post_analytics_obj = post_analytics_query.one_or_none()
+        if post_analytics_obj:
+            return post_analytics_obj.__dict__
+        else:
+            return None
+        
+    except Exception as e:
+        logger.error(f"Unable to retrieve analytics due to: {e}")
+        raise e
+    
+@app.get(f"{API_PREFIX}/user_analytics/" + "{user_id}")
+async def get_post_analytics(
+    user_id: str,
+    userToken: Annotated[str, Cookie()]
+):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken) 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            )
+        user_analytics_query = session.scalars(
+            select(UserAnalytics)
+            .where(UserAnalytics.user_id == user_id)
+        )
+        user_analytics_obj = user_analytics_query.one_or_none()
+        if user_analytics_obj:
+            return user_analytics_obj.__dict__
+        else:
+            return None    
+        
+    except Exception as e:
+        logger.error(f"Unable to retrieve analytics due to: {e}")
+        raise e
+
 # GET endpoint
 @app.get(f"{API_PREFIX}/tweets")
 async def get_tweets(request: Request):
@@ -239,6 +302,7 @@ async def delete_tweet(
                 detail="User doesn't have permission to delete this post.",
             )
         else:
+            # TODO: decrease retweet replies count.
             # Delete all related replies, quotes and retweets.
             '''
             session.execute(
@@ -246,6 +310,37 @@ async def delete_tweet(
                 .where(Post.parent_post_ref == post_obj.id)
             )
             '''
+            # Delete all replies
+            # Delete reply analytics first.
+            replies_query = session.scalars(
+                select(Post)
+                .where(Post.post_type == "reply")
+                .where(Post.parent_post_ref == post_id)
+            )
+            replies_list = replies_query.fetchall()
+            replies_ids = [item.id for item in replies_list]
+            for id in replies_ids:
+                session.execute(
+                    delete(PostLikedBy)
+                    .where(PostLikedBy.post_id == id)
+                )
+                session.execute(
+                    delete(PostAnalytics)
+                    .where(PostAnalytics.post_id == id)
+                )
+            
+            session.execute(
+                delete(Post)
+                .where(Post.post_type == "reply")
+                .where(Post.parent_post_ref == post_id)
+            )
+            
+            # Delete all retweets..
+            session.execute(
+                delete(Post)
+                .where(Post.post_type == "retweet")
+                .where(Post.parent_post_ref == post_id)
+            )
             
             session.execute(
                 delete(PostLikedBy)
@@ -489,7 +584,43 @@ async def like_post(
         logger.error(f"Unable to perform Like tweet due to {e}")
         return None 
 
-@app.get(API_PREFIX + "/has_liked/{post_id}")
+@app.get(API_PREFIX + "/has_retweeted/{post_id}", status_code=200)
+async def check_already_retweeted(post_id: str, userToken: Annotated[str, Cookie()]):
+    try:
+        if not userToken:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No token received.",
+            )
+        user = await get_current_user(userToken) 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed."
+            )
+        retweet_query = session.scalars(
+            select(Post)
+            .where(Post.parent_post_ref == post_id)
+            .where(Post.post_type == "retweet")
+            .where(Post.user_id == user.id)
+        )
+        retweet_obj = retweet_query.one_or_none()
+        if retweet_obj:
+            return Response(
+                status_code=200,
+                content=None
+            )
+        else:
+            return Response(
+                status_code=204,
+                content=None
+            )
+            
+    except Exception as e:
+        logger.error(f"Unable to retrieved retweet relation due to: {e}")
+        raise e
+
+@app.get(API_PREFIX + "/has_liked/{post_id}", status_code=200)
 async def check_like_exists(post_id: str, userToken: Annotated[str, Cookie()]):
     try:
         if not userToken:
