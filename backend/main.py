@@ -99,9 +99,27 @@ async def get_user_tweets(
             .where(User.username == username)
             .where(Post.post_type != "reply")
         )
-        #print(result)
+        
         tweets = [{**(tweet[1].__dict__), **(tweet[0].__dict__)} for tweet in result.all()]
-        #print("Tweets fetched: ", tweets)
+        for tweet in tweets:
+            tweet["parent_post"] = None
+            if parent_ref_id := tweet.get("parent_post_ref"):
+                result = session.scalars(
+                    select(Post)
+                    .where(Post.id == parent_ref_id)
+                )
+                parent_post_obj = result.one_or_none()
+                if parent_post_obj:
+                    #tweet["parent_post"] = parent_post_obj.__dict__
+                    user_id = parent_post_obj.user_id
+                    result = session.scalars(
+                        select(User)
+                        .where(User.id == user_id)
+                    )
+                    parent_post_user = result.one_or_none()
+                    if parent_post_user:
+                        tweet["parent_post"] = {**(parent_post_user.__dict__), **(parent_post_obj.__dict__)}
+
         return tweets    
     except Exception as e:
         logger.error(f"Unable to retrieve tweets file. due to {e}")
@@ -321,6 +339,10 @@ async def delete_tweet(
             replies_ids = [item.id for item in replies_list]
             for id in replies_ids:
                 session.execute(
+                    delete(Notifications)
+                    .where(Notifications.post_id == id)
+                )
+                session.execute(
                     delete(PostLikedBy)
                     .where(PostLikedBy.post_id == id)
                 )
@@ -336,6 +358,19 @@ async def delete_tweet(
             )
             
             # Delete all retweets..
+            retweets_query = session.scalars(
+                select(Post)
+                .where(Post.post_type == "retweet")
+                .where(Post.parent_post_ref == post_id)
+            )
+            retweets_list = retweets_query.fetchall()
+            retweets_ids = [item.id for item in retweets_list]
+            for id in retweets_ids:
+                session.execute(
+                    delete(Notifications)
+                    .where(Notifications.post_id == id)
+                )
+            
             session.execute(
                 delete(Post)
                 .where(Post.post_type == "retweet")
@@ -948,7 +983,6 @@ async def get_tweet(id: str, request: Request):
     try:
         cookies = request.cookies
         user_token = cookies.get("userToken")
-        #print("cookie found: ", user_token)
         if not user_token:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -962,20 +996,28 @@ async def get_tweet(id: str, request: Request):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Unable to find logged in user.",
             )
-        '''
-        with open("data/tweets.json", "r") as fp:
-            tweets = json.load(fp)
-            for tweet in tweets:
-                if id == tweet["id"]:
-                    return tweet
-            return {
-                "msg": "No tweet found."
-            }
-        '''
+            
         stmt = session.query(Post, User).join(User, Post.user_id == User.id).where(Post.id == id)
         result = stmt.one_or_none()
+        post_result = {**(result[1].__dict__), **(result[0].__dict__)}
         
-        return {**(result[1].__dict__), **(result[0].__dict__)}
+        # Check for any previous post reference.
+        post_type = result[0].post_type
+        parent_post_ref = result[0].parent_post_ref
+        parent_post_dict = None
+        if parent_post_ref and post_type in ["quote", "retweet"]:
+            parent_post_query = session.execute(
+                select(Post, User)
+                .join(User, Post.user_id == User.id)
+                .where(Post.id == parent_post_ref)
+            )
+            parent_post_obj = parent_post_query.one_or_none()
+            print(parent_post_obj)
+            if parent_post_obj:
+                parent_post_dict = {**(parent_post_obj[1].__dict__), **(parent_post_obj[0].__dict__)}
+        post_result["parent_post"] = parent_post_dict
+        
+        return post_result
     except Exception as e:
         logger.error(f"Unable to retrieve tweet due to {e}")
         return None

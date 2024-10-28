@@ -317,9 +317,9 @@ function PostDetail(props) {
         })
     }
 
-    let handleInnerTweetClick = (e) => {
+    const handleInnerTweetClick = (e) => {
         e.stopPropagation();
-        let parentPostID = tweetData.parentPost.id;
+        const parentPostID = tweetData.parentPost.id;
         navigate("/tweet/" + parentPostID);
     }
 
@@ -344,7 +344,7 @@ function PostDetail(props) {
         let createdOn = beautifyTimestamp(originalTweetData.created_on);
 
         return (
-            <div onClick={handleInnerTweetClick} className="w-full flex flex-col border-[0.5px] border-slate-400 rounded-2xl p-4 mt-2 hover:bg-gray-300">
+            <div onClick={handleInnerTweetClick} className="w-full flex flex-col cursor-pointer border-[0.5px] border-slate-400 rounded-2xl p-4 mt-2 hover:bg-gray-300">
                 <div className="flex flex-row items-center mb-2">
                     <img className='flex-none h-6 w-6 rounded-full mr-1' src={picURL} />
                     <p className="font-bold hover:underline mr-1">
@@ -465,7 +465,7 @@ function PostDetail(props) {
             <div className="flex flex-col px-4 mt-2">
                 <p className="mb-2">{tweetData.tweetText}</p>
                 <QuoteTweetComponent />
-                <p className="text-slate-400  pb-2">{dateInfo.beautifiedTimeAgoPost}</p>
+                <p className="text-slate-400 mt-1 pb-2">{dateInfo.beautifiedTimeAgoPost}</p>
 
                 <div className='flex flex-row p-2 items-center justify-stretch border-y-[0.1px] border-gray-300'>
                     <div className='flex flex-row w-full'>

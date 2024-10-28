@@ -169,12 +169,12 @@ export default ProfileArea;
 //make search bar usable to search other profiles based on name.
 //dynamic content for who to follow section.
 //complete the inner post page.
-//  show like and retweet counts.
+//show like and retweet counts.
 //option to change cover photo in edit profile.
 //fix reply button in post page.
 //  set up .envs for dev and prod react envs, run npm build
 //  fix the delete complexity, retweet only once and unable to retweet after one level.
-//  show "this post is deleted."
+// show "this post is deleted."
 // no retweets on replies for now.
 
 //docker-compose include
