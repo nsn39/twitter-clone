@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 function PostModal({isVisible, onClose, activeTweetData, setActiveTweetData}) {
+    const {REACT_APP_BACKEND_URL} = process.env;
     const [inputText, setInputText] = useState("");
 
     let tweetSubmitter = () => {
@@ -28,7 +29,7 @@ function PostModal({isVisible, onClose, activeTweetData, setActiveTweetData}) {
             body: JSON.stringify(newTweet)
         };
 
-        fetch('http://localhost:8000/twitter-clone-api/tweet', options)
+        fetch(REACT_APP_BACKEND_URL + 'tweet', options)
         .then((res) => {
             if (res.status == 201) {
                 return res.json();
@@ -38,9 +39,7 @@ function PostModal({isVisible, onClose, activeTweetData, setActiveTweetData}) {
         })
         .then((data) => {
             if (data) {
-                //setTweetState([data, ...userTweets]);
                 setInputText("");
-                //console.log("userTweets: ", userTweets);
             }
         })
         .catch(error => console.error(error));

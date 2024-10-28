@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
 function MobileNavModal({isVisible, onClose, userData}) {
+    const {REACT_APP_BACKEND_URL, REACT_APP_FS_URL} = process.env;
     const navigate = useNavigate();
     if (!isVisible) {
         return null;
@@ -10,8 +11,7 @@ function MobileNavModal({isVisible, onClose, userData}) {
     }
 
     const handleLogoutClick = () => {
-        console.log("logout button clicked.")
-        fetch("http://localhost:8000/twitter-clone-api/auth/logout",{
+        fetch(REACT_APP_BACKEND_URL + "auth/logout",{
             method: "GET",
             credentials: "include"
         }).then((res) => {
@@ -25,7 +25,7 @@ function MobileNavModal({isVisible, onClose, userData}) {
         <div onClick={handleClose} id="wrapper" className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm flex flex-col">
             <div className="w-[75%] h-screen bg-white flex flex-col p-4">
                 <div>
-                    <img src={"http://localhost:8000/twitter-clone-api/fs/" + userData.display_picture_link} className="h-10 w-10 rounded-full"/>
+                    <img src={REACT_APP_FS_URL + userData.display_picture_link} className="h-10 w-10 rounded-full"/>
 
                     <p className="font-bold text-xl">{userData.full_name}</p>
                     <p className="text-gray-400">{"@" + userData.username}</p>

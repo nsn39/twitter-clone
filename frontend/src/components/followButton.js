@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 
 function FollowButton ({currentUsername, profileUsername, setEditModeFunction}) {
+    const {REACT_APP_BACKEND_URL} = process.env;
     const [isUserFollowingProfile, setIsUserFollowingProfile] = useState(false);
     const handleEditClick = () => {
         setEditModeFunction(true);
     }
 
     const handleFollowClick = () => {
-        fetch("http://localhost:8000/twitter-clone-api/follow/" + profileUsername, {
+        fetch(REACT_APP_BACKEND_URL + "follow/" + profileUsername, {
             method: "POST",
             credentials: "include"
         })
@@ -19,7 +20,7 @@ function FollowButton ({currentUsername, profileUsername, setEditModeFunction}) 
     }
 
     const handleUnfollowClick = () => {
-        fetch("http://localhost:8000/twitter-clone-api/unfollow/" + profileUsername, {
+        fetch(REACT_APP_BACKEND_URL + "unfollow/" + profileUsername, {
             method: "DELETE",
             credentials: "include"
         })
@@ -47,7 +48,7 @@ function FollowButton ({currentUsername, profileUsername, setEditModeFunction}) 
     useEffect(() => {
         // check if user follows profile or not.
         
-        fetch("http://localhost:8000/twitter-clone-api/is_following/" + profileUsername, {
+        fetch(REACT_APP_BACKEND_URL + "is_following/" + profileUsername, {
             method: "GET",
             credentials: "include"
         })

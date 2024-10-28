@@ -199,6 +199,7 @@ async def get_post_analytics(
     userToken: Annotated[str, Cookie()]
 ):
     try:
+        print("user_id: ", user_id)
         if not userToken:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -1090,7 +1091,6 @@ async def post_tweet(
         
     except Exception as e:
         logger.error(f"Unable to post tweet. due to {e}")
-        
 
 
 @app.on_event("startup")

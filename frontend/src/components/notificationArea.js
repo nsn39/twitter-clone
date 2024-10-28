@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import NotificationCard from "./notificationCard";
 
 function NotificationArea() {
+    const {REACT_APP_BACKEND_URL, REACT_APP_FS_URL} = process.env;
     const [notificationsData, setNotificationData] = useState([]);
 
     useEffect(() => {
-        fetch("http://localhost:8000/twitter-clone-api/notifications", {
+        fetch(REACT_APP_BACKEND_URL + "notifications", {
             method: "GET",
             credentials: "include"
         })
@@ -15,7 +16,6 @@ function NotificationArea() {
             }
         })
         .then((data) => {
-            console.log("notifications_data", data);
             setNotificationData(data);
         })
 

@@ -7,6 +7,8 @@ import MobileNavModal from './mobileNavModal';
 
 
 function Timeline ({setPostMode, setActiveTweetData}) {
+    const {REACT_APP_BACKEND_URL, REACT_APP_FS_URL} = process.env;
+    
     const [userData, setUserData] = React.useState({
         "display_picture_link": "undefined"
     });
@@ -33,7 +35,8 @@ function Timeline ({setPostMode, setActiveTweetData}) {
     }
     
     useEffect(() => {
-        fetch("http://localhost:8000/twitter-clone-api/active_user", {
+        console.log(".env variable: ", REACT_APP_BACKEND_URL);
+        fetch(REACT_APP_BACKEND_URL + "active_user", {
             method: "GET",
             credentials: "include"
         }).then((res) => {
@@ -54,7 +57,7 @@ function Timeline ({setPostMode, setActiveTweetData}) {
             }
         })
 
-        fetch('http://localhost:8000/twitter-clone-api/tweets/', {
+        fetch(REACT_APP_BACKEND_URL + 'tweets/', {
             "method": "GET",
             credentials: "include"
         })
@@ -95,7 +98,7 @@ function Timeline ({setPostMode, setActiveTweetData}) {
             body: JSON.stringify(newTweet)
         };
 
-        fetch('http://localhost:8000/twitter-clone-api/tweet', options)
+        fetch(REACT_APP_BACKEND_URL + 'tweet', options)
             .then((res) => {
                 if (res.status == 201) {
                     return res.json();
@@ -118,7 +121,7 @@ function Timeline ({setPostMode, setActiveTweetData}) {
         <div className="md:w-[46%] border-x-[0.5px] border-gray-200">
             <div className='flex flex-row md:hidden px-4 py-3 items-center'>
                 <button onClick={handleMobileNavClick} className='h-9 w-9'>
-                    <img className='h-8 w-8 rounded-full' src={"http://localhost:8000/twitter-clone-api/fs/" + userData.display_picture_link} />
+                    <img className='h-8 w-8 rounded-full' src={REACT_APP_FS_URL + userData.display_picture_link} />
                 </button>
 
                 <div className='w-full h-9 flex items-center justify-center'>
@@ -137,7 +140,7 @@ function Timeline ({setPostMode, setActiveTweetData}) {
             </div>
             
             <div className="flex flex-row p-3 items-start border-b border-slate-300">
-                <img src={"http://localhost:8000/twitter-clone-api/fs/" + userData.display_picture_link} className='flex-none h-10 w-10 rounded-full mr-4' />
+                <img src={REACT_APP_FS_URL + userData.display_picture_link} className='flex-none h-10 w-10 rounded-full mr-4' />
 
                 <div className='grow flex flex-col'>
                     <textarea className="h-24 w-full mr-2 border-b border-slate-300 outline-none resize-none text-xl" type="text" placeholder="What's happening?" onChange={inputHandler} value={inputText}/>

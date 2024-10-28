@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
 function NotificationCard(props) {
+    const {REACT_APP_BACKEND_URL, REACT_APP_FS_URL} = process.env;
     const simplifyUUID = (str) => {
         return str.replaceAll("-", "");
     }
@@ -21,7 +22,7 @@ function NotificationCard(props) {
 
     useEffect(() => {
         if (props.postID) {
-            fetch("http://localhost:8000/twitter-clone-api/tweet/" + props.postID, {
+            fetch(REACT_APP_BACKEND_URL + "tweet/" + props.postID, {
                 method: "GET",
                 credentials: "include"
             })
@@ -92,7 +93,7 @@ function NotificationCard(props) {
             </div> 
             
             <div className="flex flex-col ml-3">
-                <img className="h-8 w-8 mb-2 rounded-full" src={"http://localhost:8000/twitter-clone-api/fs/" + props.displayPicture} />
+                <img className="h-8 w-8 mb-2 rounded-full" src={REACT_APP_FS_URL + props.displayPicture} />
                 <p className="mb-2">
                     <a className="font-bold hover:underline" href={"/" + props.userName}>{props.fullName}</a>
                     {notificationMessage}

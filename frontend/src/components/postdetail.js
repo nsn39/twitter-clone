@@ -5,6 +5,7 @@ import beautifyTimestamp from '../utils/beautifyDateTime';
 import Tweet from "./tweet";
 
 function PostDetail(props) {
+    const {REACT_APP_BACKEND_URL, REACT_APP_FS_URL} = process.env;
     const [tweetData, setTweetData] = useState({
         "id": props.tweetSlug,
         "tweetText": "",
@@ -122,7 +123,7 @@ function PostDetail(props) {
         props.setPostMode(true);
         props.setActiveTweetData({
             "type": "quote",
-            "pic": "http://localhost:8000/twitter-clone-api/fs/" + props.displayPicture,
+            "pic": REACT_APP_FS_URL + props.displayPicture,
             "datetime": dateInfo.beautifiedTimeAgo,
             "content": props.tweetText,
             "fullname": props.displayName,
@@ -136,7 +137,7 @@ function PostDetail(props) {
         props.setPostMode(true);
         props.setActiveTweetData({
             "type": "reply",
-            "pic": "http://localhost:8000/twitter-clone-api/fs/" + props.displayPicture,
+            "pic": REACT_APP_FS_URL + props.displayPicture,
             "datetime": dateInfo.beautifiedTimeAgo,
             "content": tweetData.tweetText,
             "fullname": tweetData.displayName,
@@ -164,7 +165,7 @@ function PostDetail(props) {
             body: JSON.stringify(newTweet)
         };
 
-        fetch('http://localhost:8000/twitter-clone-api/tweet', options)
+        fetch(REACT_APP_BACKEND_URL + 'tweet', options)
         .then((res) => {
             if (res.status == 201) {
                 return res.json();
@@ -205,7 +206,7 @@ function PostDetail(props) {
             setIsLiked(true);
             setTweetAnalytics((prevFormData) => ({ ...prevFormData, ["likes_count"]: (tweetAnalytics.likes_count + 1) }));
             //BE changes
-            fetch("http://localhost:8000/twitter-clone-api/like/" + props.id, {
+            fetch(REACT_APP_BACKEND_URL + "like/" + props.id, {
                 method: "POST",
                 credentials: "include"
             })
@@ -221,7 +222,7 @@ function PostDetail(props) {
             uncolorLikeButton();
             setIsLiked(false);
             setTweetAnalytics((prevFormData) => ({ ...prevFormData, ["likes_count"]: (tweetAnalytics.likes_count - 1) }));
-            fetch("http://localhost:8000/twitter-clone-api/unlike/" + props.id, 
+            fetch(REACT_APP_BACKEND_URL + "unlike/" + props.id, 
                 {
                     method: "DELETE",
                     credentials: "include"
@@ -254,7 +255,7 @@ function PostDetail(props) {
             body: JSON.stringify(newTweet)
         };
 
-        fetch('http://localhost:8000/twitter-clone-api/tweet', options)
+        fetch(REACT_APP_BACKEND_URL + 'tweet', options)
         .then((res) => {
             if (res.status == 201) {
                 return res.json();
@@ -264,9 +265,7 @@ function PostDetail(props) {
         })
         .then((data) => {
             if (data) {
-                //setTweetState([data, ...userTweets]);
-                //setInputText("");
-                //console.log("userTweets: ", userTweets);
+                //NOTHING
             }
         })
         .catch(error => console.error(error));
@@ -297,7 +296,7 @@ function PostDetail(props) {
     }
 
     const fetchActiveUserDetails = () => {
-        fetch("http://localhost:8000/twitter-clone-api/active_user", {
+        fetch(REACT_APP_BACKEND_URL + "active_user", {
             method: "GET",
             credentials: "include"
         }).then((res) => {
@@ -340,7 +339,7 @@ function PostDetail(props) {
         }
 
         setInnerTweetID(originalTweetData.id);
-        let picURL = "http://localhost:8000/twitter-clone-api/fs/" + originalTweetData.profile_pic_filename;
+        let picURL = REACT_APP_FS_URL + originalTweetData.profile_pic_filename;
         let createdOn = beautifyTimestamp(originalTweetData.created_on);
 
         return (
@@ -374,7 +373,7 @@ function PostDetail(props) {
     useEffect(() => {
         window.scrollTo(0, 0);
 
-        fetch("http://localhost:8000/twitter-clone-api/tweet/" + props.tweetSlug, {
+        fetch(REACT_APP_BACKEND_URL + "tweet/" + props.tweetSlug, {
             "method": "GET",
             credentials: "include"
         })
@@ -399,7 +398,7 @@ function PostDetail(props) {
             });
         });
 
-        fetch("http://localhost:8000/twitter-clone-api/replies/" + props.tweetSlug, {
+        fetch(REACT_APP_BACKEND_URL + "replies/" + props.tweetSlug, {
             method: "GET",
             credentials: "include"
         })
@@ -410,12 +409,11 @@ function PostDetail(props) {
         })
         .then((data) => {
             if (data) {
-                console.log("Replies received: ", data);
                 setTweetReplies(data);
             }
         })
 
-        fetch("http://localhost:8000/twitter-clone-api/has_liked/" + props.tweetSlug, {
+        fetch(REACT_APP_BACKEND_URL + "has_liked/" + props.tweetSlug, {
             method: "GET",
             credentials: "include"
         })
@@ -426,7 +424,7 @@ function PostDetail(props) {
             }
         })
 
-        fetch("http://localhost:8000/twitter-clone-api/post_analytics/" + props.tweetSlug, {
+        fetch(REACT_APP_BACKEND_URL + "post_analytics/" + props.tweetSlug, {
             method: "GET",
             credentials: "include"
         })
@@ -455,7 +453,7 @@ function PostDetail(props) {
             </div>
 
             <div className="flex flex-row items-center px-4">
-                <img src={"http://localhost:8000/twitter-clone-api/fs/" + tweetData.displayPicture} className="h-10 w-10 rounded-full"></img>
+                <img src={REACT_APP_FS_URL + tweetData.displayPicture} className="h-10 w-10 rounded-full"></img>
                 <div className="flex flex-col ml-2">
                     <a href="/" className="font-bold hover:underline">{tweetData.displayName}</a>
                     <a href="/" className="text-slate-400">@{tweetData.userName}</a>
@@ -490,7 +488,7 @@ function PostDetail(props) {
                         </div>
                     </div>
 
-                    <div className='flex flex-row w-full text-gray-300 hover:text-red-400'>
+                    <div className='flex flex-row w-full items-center text-slate-600 hover:text-red-400'>
                         <button onClick={handleLikeClick} onMouseOver={onMouseOverLike} onMouseOut={onMouseOutLike} className='h-9 w-9 flex items-center justify-center hover:bg-red-200 rounded-full'>
                             <svg id={"like_svg_" + tweetElementId} className='hover:bg-red-200 hover:rounded-full h-6 w-6' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M12 6.00019C10.2006 3.90317 7.19377 3.2551 4.93923 5.17534C2.68468 7.09558 2.36727 10.3061 4.13778 12.5772C5.60984 14.4654 10.0648 18.4479 11.5249 19.7369C11.6882 19.8811 11.7699 19.9532 11.8652 19.9815C11.9483 20.0062 12.0393 20.0062 12.1225 19.9815C12.2178 19.9532 12.2994 19.8811 12.4628 19.7369C13.9229 18.4479 18.3778 14.4654 19.8499 12.5772C21.6204 10.3061 21.3417 7.07538 19.0484 5.17534C16.7551 3.2753 13.7994 3.90317 12 6.00019Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                         </button>
@@ -509,7 +507,7 @@ function PostDetail(props) {
             </div>
 
             <div className='flex flex-row p-4 border-b-[0.1px] border-slate-300'>
-                <img src={"http://localhost:8000/twitter-clone-api/fs/" + activeUserData.displayPicture} className='h-10 w-10 rounded-full'></img>
+                <img src={REACT_APP_FS_URL + activeUserData.displayPicture} className='h-10 w-10 rounded-full'></img>
                 <textarea className='w-full h-20 mx-2 outline-none text-xl resize-none' placeholder='Post your reply' onChange={replyInputHandler} value={replyText}></textarea>
 
                 <ReplyButton />
@@ -525,6 +523,7 @@ function PostDetail(props) {
                         originalTimestamp={created_on}
                         displayPicture={profile_pic_filename}
                         contextType="timeline"
+                        postType="reply"
                     />
                 ))
             }

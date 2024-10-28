@@ -2,10 +2,11 @@ import SidebarExploreFollow from "./sidebarExploreFollow";
 import { useEffect, useState } from "react";
 
 function WhoToFollow() {
+    const {REACT_APP_BACKEND_URL} = process.env;
     const [followSuggestions, setFollowSuggestions] = useState([]);
 
     useEffect(() => {
-        fetch("http://localhost:8000/twitter-clone-api/who_to_follow", {
+        fetch(REACT_APP_BACKEND_URL + "who_to_follow", {
             method: "GET",
             credentials: "include"
         })

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 
 function Navbar ({setPostMode, showNotificationCount}) {
+    const {REACT_APP_BACKEND_URL, REACT_APP_FS_URL, REACT_APP_BACKEND_WS_URL} = process.env;
     const [notificationsCount, setNotificationsCount] = useState(0);
     const [userData, setUserData] = useState({
         "full_name": "Display Name",
@@ -45,8 +46,7 @@ function Navbar ({setPostMode, showNotificationCount}) {
     */
 
     const handleLogoutClick = () => {
-        console.log("logout button clicked.")
-        fetch("http://localhost:8000/twitter-clone-api/auth/logout",{
+        fetch(REACT_APP_BACKEND_URL + "auth/logout",{
             method: "GET",
             credentials: "include"
         }).then((res) => {
@@ -57,7 +57,7 @@ function Navbar ({setPostMode, showNotificationCount}) {
     }
 
     const fetchUserDetails = () => {
-        fetch("http://localhost:8000/twitter-clone-api/active_user", {
+        fetch(REACT_APP_BACKEND_URL + "active_user", {
             method: "GET",
             credentials: "include"
         }).then((res) => {
@@ -68,19 +68,17 @@ function Navbar ({setPostMode, showNotificationCount}) {
             }
         }).then(data => {
             if (data) {
-                console.log(data.fullname);
                 setUserData({
                     "full_name": data.fullname,
                     "username": data.username,
                     "display_picture_link": data.profile_pic_filename
                 });
-                console.log("user data: ", userData);
             }
         })
     }
 
     const fetchNotificationsCount = () => {
-        fetch("http://localhost:8000/twitter-clone-api/unseen_notifications_count", {
+        fetch(REACT_APP_BACKEND_URL + "unseen_notifications_count", {
             method: "GET",
             credentials: "include"
         })
@@ -91,23 +89,21 @@ function Navbar ({setPostMode, showNotificationCount}) {
         })
         .then((data) => {
             if (data) {
-                console.log("unseen notifications count: ", data.count);
                 setNotificationsCount(data.count);
             }
         })
     }
 
-
     useEffect(() => {
         fetchUserDetails();
         
         // connect to websocket endpoint.
-        const ws = new WebSocket("ws://localhost:8000/twitter-clone-api/ws/notifications");
+        const ws = new WebSocket(REACT_APP_BACKEND_WS_URL + "notifications");
 
         ws.onopen = (event) => {
             console.log("Web socket connection started.");
 
-            fetch("http://localhost:8000/twitter-clone-api/ws/get_user_token", {
+            fetch(REACT_APP_BACKEND_URL + "ws/get_user_token", {
                 method: "GET",
                 credentials: "include"
             })
@@ -220,10 +216,9 @@ function Navbar ({setPostMode, showNotificationCount}) {
             <button onClick={handlePostClick} className="hidden md:block text-xl font-bold text-white bg-sky-400 mt-4 py-3 px-4 rounded-full w-10/12">Post</button>
             
             
-            
             <div className="hidden md:block relative w-11/12" id="profile-bar">
                 <div onAuxClick={toggleDropdown} onClick={toggleDropdown} className="flex flex-row items-center mt-4 hover:bg-gray-300 rounded-full p-2 cursor-pointer">
-                    <img src={"http://localhost:8000/twitter-clone-api/fs/" + userData.display_picture_link} className="flex-none h-10 w-10 rounded-full mr-4"/>
+                    <img src={REACT_APP_FS_URL + userData.display_picture_link} className="flex-none h-10 w-10 rounded-full mr-4"/>
 
                     <div className="grow flex flex-col">
                         <p className="font-bold text-base">{userData.full_name}</p>

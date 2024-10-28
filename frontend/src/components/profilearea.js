@@ -7,12 +7,14 @@ import FollowButton from "./followButton";
 import { useNavigate } from "react-router-dom";
 
 function ProfileArea(props) {
+    const {REACT_APP_BACKEND_URL, REACT_APP_FS_URL} = process.env;
     const [userExists, setUserExists] = React.useState(true);
     const [userData, setUserData] = React.useState({
         "display_picture_link": "undefined"
     });
     const [activeUserData, setActiveUserData] = React.useState({});
     const [userTweets, setTweetState] = React.useState([]);
+    const [userAnalytics, setUserAnalytics] = React.useState({});
     const [editMode, setEditMode] = useState(false);
 
     const navigate = useNavigate();
@@ -24,9 +26,32 @@ function ProfileArea(props) {
     const updateTweetList = (newList) => {
         setTweetState(newList);
     };
+
+    const fetchUserAnalytics = (profile_id) => {
+        console.log("Fetche called with id: ", profile_id);
+        fetch(REACT_APP_BACKEND_URL + "user_analytics/" + profile_id, {
+            method: "GET",
+            credentials: "include"
+        })
+        .then((res) => {
+            if (res.status == 200) {
+                return res.json();
+            }
+        })
+        .then((data) => {
+            if (data) {
+                setUserAnalytics({
+                    "follower_count": data.follower_count,
+                    "following_count": data.following_count,
+                    "posts_count": data.posts_count
+                });
+            }
+        })
+
+    }
     
     useEffect(() => {
-        fetch("http://localhost:8000/twitter-clone-api/active_user", {
+        fetch(REACT_APP_BACKEND_URL + "active_user", {
             method: "GET",
             credentials: "include"
         }).then((res) => {
@@ -45,7 +70,7 @@ function ProfileArea(props) {
             }
         })
 
-        fetch("http://localhost:8000/twitter-clone-api/profile/" + props.userName, {
+        fetch(REACT_APP_BACKEND_URL + "profile/" + props.userName, {
             method: "GET",
             credentials: "include"
         })
@@ -59,18 +84,25 @@ function ProfileArea(props) {
         })
         .then((data) => {
             if (data) {//accessing fields individually works but setting data at once doesn't ??
+                console.log("profile data received: ", data);
                 setUserData({
+                    "id": data.id,
                     "full_name": data.fullname,
                     "username": data.username,
-                    "display_picture_link": data.profile_pic_filename
+                    "display_picture_link": data.profile_pic_filename,
+                    "joined_date": data.created_on,
+                    "birth_date": data.birth_day,
+                    "birth_year": data.birth_year,
+                    "birth_month": data.birth_month
                 });
+                fetchUserAnalytics(data.id);
                 console.log("User data: ", data);
             }else {
                 setUserExists(false);
             }
         })
 
-        fetch('http://localhost:8000/twitter-clone-api/user_tweets/' + props.userName, {
+        fetch(REACT_APP_BACKEND_URL + 'user_tweets/' + props.userName, {
             method: "GET",
             credentials: "include"
         })
@@ -81,6 +113,8 @@ function ProfileArea(props) {
             console.log(data);
             setTweetState(data);
         });
+
+        
     }, []);
 
     if (!userExists) {
@@ -101,8 +135,8 @@ function ProfileArea(props) {
                 </button>
 
                 <div className="flex flex-col ml-6">
-                    <p className="text-xl font-bold">username</p>
-                    <p className="text-gray-500 text-sm">1000 posts</p>
+                    <p className="text-xl font-bold">{userData.username}</p>
+                    <p className="text-gray-500 text-sm">{userAnalytics.posts_count + " posts"}</p>
                 </div>
             </div>
 
@@ -110,7 +144,7 @@ function ProfileArea(props) {
                 <img src="/cover.jpeg" className="h-[200px] w-[600px]"/>
 
                 <div className="absolute h-30 w-30 rounded-full border-2 border-white top-[150px] left-[20px]">
-                    <img src={"http://localhost:8000/twitter-clone-api/fs/" + userData.display_picture_link} className="h-28 w-28 rounded-full" />
+                    <img src={REACT_APP_FS_URL + userData.display_picture_link} className="h-28 w-28 rounded-full" />
                 </div>
             </div>
 
@@ -122,13 +156,13 @@ function ProfileArea(props) {
                 <p className="font-bold text-2xl">{userData.full_name}</p>
                 <p className="text-gray-400">{"@" + userData.username}</p>
                 <div className="flex flex-row text-gray-400 mt-2">
-                    <p>Born October 1, 2000</p>
-                    <p className="ml-5">Joined October 2015</p>
+                    <p>{"Born " + userData.birth_date + " " + userData.birth_month + " ," + userData.birth_year}</p>
+                    <p className="ml-5">{"Joined " + userData.joined_date}</p>
                 </div>
                 
                 <div className="flex flex-row mt-2 items-center">
-                    <p className="font-bold mr-1">746</p> <p className="text-gray-400 text-md">Following</p>
-                    <p className="ml-5 font-bold mr-1">399 </p> <p className="text-gray-400 text-md">Followers</p> 
+                    <p className="font-bold mr-1">{userAnalytics.following_count}</p> <p className="text-gray-400 text-md">Following</p>
+                    <p className="ml-5 font-bold mr-1">{userAnalytics.follower_count}</p> <p className="text-gray-400 text-md">Followers</p> 
                 </div>
             </div>
 
@@ -173,9 +207,10 @@ export default ProfileArea;
 //option to change cover photo in edit profile.
 //fix reply button in post page.
 //  set up .envs for dev and prod react envs, run npm build
-//  fix the delete complexity, retweet only once and unable to retweet after one level.
-// show "this post is deleted."
-// no retweets on replies for now.
+//fix the delete complexity, retweet only once and unable to retweet after one level.
+//show "this post is deleted."
+//no retweets on replies for now.
+//show follow count in profile
 
 //docker-compose include
 //same domain using nginx

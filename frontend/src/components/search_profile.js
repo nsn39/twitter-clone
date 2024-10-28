@@ -1,5 +1,5 @@
 function SearchProfile (props) {
-
+    const {REACT_APP_FS_URL} = process.env;
     const handleDeleteClick = (e) => {
         e.stopPropagation();
         const newResult = props.searchResult.filter((item) => item.id !== props.id);
@@ -10,7 +10,7 @@ function SearchProfile (props) {
         <div className="p-2 hover:bg-gray-100">
             <div className="flex flex-row items-center justify-between">
                 <div className="flex flex-row items-center">
-                    <img src={"http://localhost:8000/twitter-clone-api/fs/" + props.displayPicture} className="h-10 w-10 mr-2 rounded-full" />
+                    <img src={REACT_APP_FS_URL + props.displayPicture} className="h-10 w-10 mr-2 rounded-full" />
                     <div className="flex flex-col">
                         <p className="font-bold text-md hover:underline">{props.fullName}</p>
                         <p className="text-gray-400">{"@" + props.userName}</p>

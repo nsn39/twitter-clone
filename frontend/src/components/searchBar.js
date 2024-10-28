@@ -3,6 +3,7 @@ import { useOutsideClick } from "../hooks/useOutsideClick";
 import SearchProfile from "./search_profile";
 
 function SearchBar() {
+    const {REACT_APP_BACKEND_URL} = process.env;
     const [inputText, setInputText] = useState("");
     const [searchResult, setSearchResult] = useState([]);
 
@@ -21,7 +22,7 @@ function SearchBar() {
             dropdown.classList.remove("hidden");
         }
 
-        fetch("http://localhost:8000/twitter-clone-api/search/" + inputText, {
+        fetch(REACT_APP_BACKEND_URL + "search/" + inputText, {
             method: "GET",
             credentials: "include"
         })

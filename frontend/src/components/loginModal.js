@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function LoginModal({isVisible, onClose}) {
+    const {REACT_APP_BACKEND_URL} = process.env;
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -28,26 +29,22 @@ function LoginModal({isVisible, onClose}) {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        console.log(formData);
+
         var form_data = new FormData();
         form_data.append("username", formData.identifier);
         form_data.append("password", formData.password)
 
         //get a token and save it to local state.
-        fetch("http://localhost:8000/twitter-clone-api/auth/login", {
-            "method": "POST",
-            "body": form_data,
+        fetch(REACT_APP_BACKEND_URL + "auth/login", {
+            method: "POST",
+            body: form_data,
             credentials: "include"
         })
         .then((res) => {
-            //console.log("LoginModal response: ", res);
             if (res.status == 200) {
-                //console.log("response: ", res.json());
-                console.log("login successful");
                 navigate("/")
             }
             else {
-                console.log("login failed");
                 setSubmitMessage("Incorrect username or password. Please try again!!!");
             }
         })

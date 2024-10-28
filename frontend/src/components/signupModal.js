@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function SignupModal({isVisible, onClose}) {
+    const {REACT_APP_BACKEND_URL} = process.env;
     const [submitMessage, setSubmitMessage] = useState("");
     const navigate = useNavigate();
 
@@ -53,7 +54,7 @@ function SignupModal({isVisible, onClose}) {
 
         console.log(form_data);
         //get a token and save it to local state.
-        fetch("http://localhost:8000/twitter-clone-api/auth/signup", {
+        fetch(REACT_APP_BACKEND_URL + "auth/signup", {
             "method": "POST",
             "body": form_data,
             credentials: "include"

@@ -4,6 +4,7 @@ import { useOutsideClick } from '../hooks/useOutsideClick';
 import beautifyTimestamp from '../utils/beautifyDateTime';
 
 function Tweet(props) {
+    const {REACT_APP_BACKEND_URL, REACT_APP_FS_URL} = process.env;
     const [tweetData, setTweetData] = useState({
         "id": props.id,
         "tweetText": props.tweetText,
@@ -99,8 +100,10 @@ function Tweet(props) {
     }
 
     const onMouseOutRetweet = () => {
-        let svg_element = document.querySelector("#retweet_svg_" + tweetElementId);
-        svg_element.setAttribute("fill", "#000000")
+        if (!isRetweeted) {
+            let svg_element = document.querySelector("#retweet_svg_" + tweetElementId);
+            svg_element.setAttribute("fill", "#000000");
+        }
     }
 
     const onMouseOverReply = () => {
@@ -128,7 +131,7 @@ function Tweet(props) {
         props.setPostMode(true);
         props.setActiveTweetData({
             "type": "quote",
-            "pic": "http://localhost:8000/twitter-clone-api/fs/" + props.displayPicture,
+            "pic": REACT_APP_FS_URL + props.displayPicture,
             "datetime": dateInfo.beautifiedTimeAgo,
             "content": props.tweetText,
             "fullname": props.displayName,
@@ -142,7 +145,7 @@ function Tweet(props) {
         props.setPostMode(true);
         props.setActiveTweetData({
             "type": "reply",
-            "pic": "http://localhost:8000/twitter-clone-api/fs/" + props.displayPicture,
+            "pic": REACT_APP_FS_URL + props.displayPicture,
             "datetime": dateInfo.beautifiedTimeAgo,
             "content": tweetData.tweetText,
             "fullname": tweetData.displayName,
@@ -175,7 +178,7 @@ function Tweet(props) {
             setIsLiked(true);
             setTweetAnalytics((prevFormData) => ({ ...prevFormData, ["likes_count"]: (tweetAnalytics.likes_count + 1) }));
             //BE changes
-            fetch("http://localhost:8000/twitter-clone-api/like/" + tweetData.id, {
+            fetch(REACT_APP_BACKEND_URL + "like/" + tweetData.id, {
                 method: "POST",
                 credentials: "include"
             })
@@ -190,7 +193,7 @@ function Tweet(props) {
             uncolorLikeButton();
             setIsLiked(false);
             setTweetAnalytics((prevFormData) => ({ ...prevFormData, ["likes_count"]: (tweetAnalytics.likes_count - 1) }));
-            fetch("http://localhost:8000/twitter-clone-api/unlike/" + tweetData.id, 
+            fetch(REACT_APP_BACKEND_URL + "unlike/" + tweetData.id, 
                 {
                     method: "DELETE",
                     credentials: "include"
@@ -228,7 +231,7 @@ function Tweet(props) {
             body: JSON.stringify(newTweet)
         };
 
-        fetch('http://localhost:8000/twitter-clone-api/tweet', options)
+        fetch(REACT_APP_BACKEND_URL + 'tweet', options)
             .then((res) => {
                 if (res.status == 201) {
                     return res.json();
@@ -248,15 +251,22 @@ function Tweet(props) {
 
     const onRetweetClick = (e) => {
         e.stopPropagation();
+
         let btn = document.getElementById("retweet_icon_" + tweetElementId);
         btn.classList.add("hidden");
+
+        if (props.postType == "reply") { //no retweet if a reply.
+            return;
+        }
+        onMouseOverRetweet();
+        setIsRetweeted(true);
         retweetSubmitter();
     }
 
     const onDeleteClick = (e) => {
         e.stopPropagation();
         //e.preventDefault();
-        fetch("http://localhost:8000/twitter-clone-api/tweet/" + props.id, {
+        fetch(REACT_APP_BACKEND_URL + "tweet/" + props.id, {
             method: "DELETE",
             credentials: "include"
         })
@@ -289,7 +299,7 @@ function Tweet(props) {
 
         let originalTweetData = props.parentPost;
         setInnerTweetID(originalTweetData.id);
-        let picURL = "http://localhost:8000/twitter-clone-api/fs/" + originalTweetData.profile_pic_filename;
+        let picURL = REACT_APP_FS_URL + originalTweetData.profile_pic_filename;
         let createdOn = beautifyTimestamp(originalTweetData.created_on);
 
         return (
@@ -385,7 +395,7 @@ function Tweet(props) {
         //
         //setTweetElementId(simplifyUUID(props.id));
 
-        fetch("http://localhost:8000/twitter-clone-api/has_liked/" + tweetData.id, {
+        fetch(REACT_APP_BACKEND_URL + "has_liked/" + tweetData.id, {
             method: "GET",
             credentials: "include"
         })
@@ -396,7 +406,7 @@ function Tweet(props) {
             }
         })
 
-        fetch("http://localhost:8000/twitter-clone-api/has_retweeted/" + tweetData.id, {
+        fetch(REACT_APP_BACKEND_URL + "has_retweeted/" + tweetData.id, {
             method: "GET",
             credentials: "include"
         })
@@ -407,7 +417,7 @@ function Tweet(props) {
             }
         })
 
-        fetch("http://localhost:8000/twitter-clone-api/post_analytics/" + props.id, {
+        fetch(REACT_APP_BACKEND_URL + "post_analytics/" + props.id, {
             method: "GET",
             credentials: "include"
         })
@@ -428,7 +438,7 @@ function Tweet(props) {
         <div className="flex flex-col border-b border-slate-300 hover:bg-gray-200 p-3 cursor-pointer" onClick={handleClick}>
             <RetweetMessage />
             <div className='flex flex-row'>
-                <img className='flex-none h-10 w-10 rounded-full mr-2' src={"http://localhost:8000/twitter-clone-api/fs/" + tweetData.displayPicture} />
+                <img className='flex-none h-10 w-10 rounded-full mr-2' src={REACT_APP_FS_URL + tweetData.displayPicture} />
                 <div className='flex-grow'>
                     <div className="flex flex-row items-center justify-between">
                         <div className='flex flex-row items-center'>

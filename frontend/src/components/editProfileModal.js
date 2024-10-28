@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function EditProfileModal ({isVisible, onClose}) {
+    const {REACT_APP_BACKEND_URL} = process.env;
     const navigate = useNavigate();
 
     const [updateData, setUpdateData] = useState({
@@ -26,8 +27,8 @@ function EditProfileModal ({isVisible, onClose}) {
         form_data.append("location", updateData.location);
         form_data.append("website", updateData.website);
 
-        console.log(form_data);
-        fetch("http://localhost:8000/twitter-clone-api/profile/", {
+        
+        fetch(REACT_APP_BACKEND_URL + "profile/", {
             "method": "PATCH",
             "body": form_data,
             credentials: "include"
@@ -54,7 +55,6 @@ function EditProfileModal ({isVisible, onClose}) {
 
     const onFileChange = (event) => {
         setUpdateData((prevFormData) => ({...prevFormData, selectedFile: event.target.files[0]}));
-        //console.log(updateData.selectedFile);
 
         var image_element = document.getElementById("profile_pic");
         image_element.src = URL.createObjectURL(event.target.files[0]);
