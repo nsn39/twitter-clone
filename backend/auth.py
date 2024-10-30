@@ -179,14 +179,16 @@ async def login_for_access_token(
         "full_name": user.fullname
     }
     response = JSONResponse(content=user_info)
+    # secure False and samesite lax was working before.
+    # secure True samesite none for local; secure False samesite strict for prod.
     response.set_cookie(
         key="userToken",
         value=access_token,
         domain="localhost",
-        secure=False,
+        secure=True, 
         httponly=True,
         max_age=400000,
-        samesite="lax", #lax,strict
+        samesite="none",
     )
     return response
 

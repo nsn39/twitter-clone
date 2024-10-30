@@ -42,8 +42,17 @@ app = FastAPI(
 
 # Set all CORS enabled origins
 # TODO: Specify settings.BACKEND_CORS_ORIGINS:
-allowed_origins = ['http://localhost:3000', 'http://127.0.0.1:3000',
-    'https://localhost:3000', 'https://127.0.0.1:3000'] 
+# add null only in case of local environment.
+allowed_origins = [
+    'http://localhost',
+    'https://localhost',
+    'http://localhost:3000', 
+    'http://127.0.0.1:3000',
+    'https://localhost:3000', 
+    'https://127.0.0.1:3000', 
+    'null'
+]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
