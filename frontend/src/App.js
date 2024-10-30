@@ -6,7 +6,6 @@ import Explore from './components/explore';
 import Messages from './components/messages';
 import Profile from './components/profile';
 import Notifications from './components/notifications';
-import Error from './components/error';
 import Post from './components/post';
 import LoginPage from './components/loginPage';
 import SignupPage from './components/signupPage';
