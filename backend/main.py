@@ -46,6 +46,8 @@ app = FastAPI(
 allowed_origins = [
     'http://localhost',
     'https://localhost',
+    'http://localhost:80',
+    'https://localhost:80',
     'http://localhost:3000', 
     'http://127.0.0.1:3000',
     'https://localhost:3000', 

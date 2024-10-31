@@ -1,0 +1,40 @@
+version: "3"
+
+services: 
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    volumes:
+      - development_nginx:/etc/development_nginx/temp
+    ports:
+      - '80:80'
+      - '443:443'
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:15
+    # ports:
+    #   - 5432:5432
+    shm_size: 128mb
+    volumes:
+      - db-data:/var/lib/postgresql/prod_data
+    env_file:
+      - .env
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    # ports:
+    #   - 8000:8000
+    env_file:
+      - .env
+
+volumes:
+  db-data: {}
+  development_nginx: {}
+    
