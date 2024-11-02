@@ -4,7 +4,9 @@ function FollowButton ({currentUsername, profileUsername, setEditModeFunction}) 
     const {REACT_APP_BACKEND_URL} = process.env;
     const [isUserFollowingProfile, setIsUserFollowingProfile] = useState(false);
     const handleEditClick = () => {
-        setEditModeFunction(true);
+        if (setEditModeFunction !== null) {
+            setEditModeFunction(true);
+        }
     }
 
     const handleFollowClick = () => {

@@ -18,8 +18,9 @@ COPY . /app
 
 RUN chmod u+x run.sh
 
-#EXPOSE 8000
-
+RUN mkdir -p /user_data/
+RUN chown -R backend:backend /user_data/
+RUN chmod -R u+rw /user_data/
 USER backend
 
 ENV PYTHONPATH=/app

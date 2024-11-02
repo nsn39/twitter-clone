@@ -24,6 +24,10 @@ from db.models import (
     Post, User, PostLikedBy, 
     PostAnalytics, UserAnalytics, UserFollowedBy, Notifications
 )
+from utils.check_analytics_entry import (
+    get_or_create_post_analytics,
+    get_or_create_user_analytics
+)
 from tasks.notifications import (
     create_follow_notification,
     create_like_notification,
@@ -31,7 +35,10 @@ from tasks.notifications import (
 )
 
 API_PREFIX = "/twitter-clone-api"
-USER_FILES_PATH = "/home/nishan/Practice/temp_fs/"
+
+USER_FILES_PATH = "/user_data/"#"/home/nishan/Practice/temp_fs/"
+if not os.path.isdir(USER_FILES_PATH):
+    pass
 
 app = FastAPI(
     title="twitter-clone",
@@ -320,7 +327,7 @@ async def delete_tweet(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Authentication failed."
             )
-        
+        # delete user post count if user
         post_query = session.scalars(
             select(Post)
             .where(Post.id == post_id)
@@ -332,7 +339,41 @@ async def delete_tweet(
                 detail="User doesn't have permission to delete this post.",
             )
         else:
-            # TODO: decrease retweet replies count.
+            user_analytics_obj = get_or_create_user_analytics(user.id)
+            user_posts_count = user_analytics_obj.posts_count
+            session.execute(
+                update(UserAnalytics)
+                .where(UserAnalytics.user_id == user.id)
+                .values(posts_count = user_posts_count - 1)
+            )
+            
+            post_type = post_obj.post_type
+            parent_post_ref = post_obj.parent_post_ref
+            if parent_post_ref:
+                parent_post_analytics_obj = get_or_create_post_analytics(parent_post_ref)
+                if parent_post_analytics_obj:
+                    if post_type == "reply":
+                        replies_count = parent_post_analytics_obj.replies_count
+                        session.execute(
+                            update(PostAnalytics)
+                            .where(PostAnalytics.post_id == parent_post_ref)
+                            .values(replies_count = replies_count - 1)
+                        )
+                    elif post_type == "retweet":
+                        retweets_count = parent_post_analytics_obj.retweets_count
+                        session.execute(
+                            update(PostAnalytics)
+                            .where(PostAnalytics.post_id == parent_post_ref)
+                            .values(retweets_count = retweets_count - 1)
+                        )
+                    elif post_type == "quote":
+                        quotes_count = parent_post_analytics_obj.quotes_count
+                        session.execute(
+                            update(PostAnalytics)
+                            .where(PostAnalytics.post_id == parent_post_ref)
+                            .values(quotes_count = quotes_count - 1)
+                        )
+            
             # Delete all related replies, quotes and retweets.
             '''
             session.execute(
@@ -1090,6 +1131,39 @@ async def post_tweet(
             created_on=datetime.datetime.fromisoformat(tweet_utc_timestamp),
             last_updated_on=datetime.datetime.fromisoformat(tweet_utc_timestamp)
         ))
+
+        post_user_analytics = get_or_create_user_analytics(user.id)
+        posts_count = post_user_analytics.posts_count
+        session.execute(
+            update(UserAnalytics)
+            .where(UserAnalytics.user_id == user.id)
+            .values(posts_count = posts_count + 1)
+        )
+        
+        if parent_post_ref:
+            parent_post_analytics = get_or_create_post_analytics(parent_post_ref)
+            if post_type == 'reply':
+                replies_count = parent_post_analytics.replies_count
+                session.execute(
+                    update(PostAnalytics)
+                    .where(PostAnalytics.post_id == parent_post_ref)
+                    .values(replies_count = replies_count + 1)
+                )
+            elif post_type == "quote":
+                quotes_count = parent_post_analytics.quotes_count
+                session.execute(
+                    update(PostAnalytics)
+                    .where(PostAnalytics.post_id == parent_post_ref)
+                    .values(quotes_count = quotes_count + 1)
+                )
+            elif post_type == "retweet":
+                retweets_count = parent_post_analytics.retweets_count
+                session.execute(
+                    update(PostAnalytics)
+                    .where(PostAnalytics.post_id == parent_post_ref)
+                    .values(retweets_count = retweets_count + 1)
+                )
+        # if reply or retweet update parent post analytics.
         session.commit()
         
         post_stmt = session.query(Post, User).join(User, Post.user_id == User.id).where(Post.id == post_unique_id)

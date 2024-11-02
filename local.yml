@@ -17,6 +17,8 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - db
+    volumes:
+      - backend_files:/user_data
     ports:
       - 8000:8000
     env_file:
@@ -25,4 +27,5 @@ services:
 
 volumes:
   db-data: {}
+  backend_files: {}
     

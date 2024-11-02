@@ -3,6 +3,7 @@ import { useEffect, useState, Fragment } from "react";
 import Tweet from "./tweet";
 import EditProfileModal from "./editProfileModal";
 import FollowButton from "./followButton";
+import mapMonthIntToStr from "../utils/mapMonthToStr";
 
 import { useNavigate } from "react-router-dom";
 
@@ -14,7 +15,11 @@ function ProfileArea(props) {
     });
     const [activeUserData, setActiveUserData] = React.useState({});
     const [userTweets, setTweetState] = React.useState([]);
-    const [userAnalytics, setUserAnalytics] = React.useState({});
+    const [userAnalytics, setUserAnalytics] = React.useState({
+        "follower_count": 0,
+        "following_count": 0,
+        "posts_count": 0,
+    });
     const [editMode, setEditMode] = useState(false);
 
     const navigate = useNavigate();
@@ -28,7 +33,6 @@ function ProfileArea(props) {
     };
 
     const fetchUserAnalytics = (profile_id) => {
-        console.log("Fetche called with id: ", profile_id);
         fetch(REACT_APP_BACKEND_URL + "user_analytics/" + profile_id, {
             method: "GET",
             credentials: "include"
@@ -47,7 +51,6 @@ function ProfileArea(props) {
                 });
             }
         })
-
     }
     
     useEffect(() => {
@@ -62,11 +65,9 @@ function ProfileArea(props) {
             }
         }).then(data => {
             if (data) {
-                console.log(data.fullname);
                 setActiveUserData({
                     "username": data.username,
                 });
-                console.log("user data: ", userData);
             }
         })
 
@@ -90,13 +91,14 @@ function ProfileArea(props) {
                     "full_name": data.fullname,
                     "username": data.username,
                     "display_picture_link": data.profile_pic_filename,
-                    "joined_date": data.created_on,
+                    "joined_date": data.joined_day,
+                    "joined_month": mapMonthIntToStr(data.joined_month),
+                    "joined_year": data.joined_year,
                     "birth_date": data.birth_day,
                     "birth_year": data.birth_year,
-                    "birth_month": data.birth_month
+                    "birth_month": mapMonthIntToStr(data.birth_month)
                 });
                 fetchUserAnalytics(data.id);
-                console.log("User data: ", data);
             }else {
                 setUserExists(false);
             }
@@ -110,7 +112,6 @@ function ProfileArea(props) {
             return res.json();
         })
         .then((data) => {
-            console.log(data);
             setTweetState(data);
         });
 
@@ -157,7 +158,7 @@ function ProfileArea(props) {
                 <p className="text-gray-400">{"@" + userData.username}</p>
                 <div className="flex flex-row text-gray-400 mt-2">
                     <p>{"Born " + userData.birth_date + " " + userData.birth_month + " ," + userData.birth_year}</p>
-                    <p className="ml-5">{"Joined " + userData.joined_date}</p>
+                    <p className="ml-5">{"Joined " + userData.joined_date + " " + userData.joined_month + " ," + userData.joined_year}</p>
                 </div>
                 
                 <div className="flex flex-row mt-2 items-center">
@@ -178,7 +179,7 @@ function ProfileArea(props) {
             
             {
                 userTweets && userTweets.map(({id, fullname, username, content, created_on, profile_pic_filename, post_type, parent_post}) => (
-                    <Tweet key={id} id={id} displayName={fullname} userName={"@" + username} tweetText={content} originalTimestamp={created_on} displayPicture={profile_pic_filename} contextType="profile" postType={post_type} parentPost={parent_post} tweetList={userTweets} updateTweetList={updateTweetList} />
+                    <Tweet key={id} id={id} displayName={fullname} userName={username} tweetText={content} originalTimestamp={created_on} displayPicture={profile_pic_filename} contextType="profile" postType={post_type} parentPost={parent_post} tweetList={userTweets} updateTweetList={updateTweetList} />
                 ))
             }
 
@@ -211,6 +212,15 @@ export default ProfileArea;
 //show "this post is deleted."
 //no retweets on replies for now.
 //show follow count in profile
+
+//complete post_count, reply_count and retweet_count,
+//FE pmobile screen reponsiveness completely
+//DPs in postModal
+//better font quality and thinner border for tweets
+//joined date in profile fix.
+
+//notifications bug fix
+//likes bug fix.
 
 //docker-compose include
 //same domain using nginx

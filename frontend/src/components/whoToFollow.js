@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 function WhoToFollow() {
     const {REACT_APP_BACKEND_URL} = process.env;
+    const [activeUserData, setActiveUserData] = useState({});
     const [followSuggestions, setFollowSuggestions] = useState([]);
 
     useEffect(() => {
@@ -20,6 +21,23 @@ function WhoToFollow() {
                 setFollowSuggestions(data);
             }
         })
+
+        fetch(REACT_APP_BACKEND_URL + "active_user", {
+            method: "GET",
+            credentials: "include"
+        }).then((res) => {
+            if (res.status == 200) {
+                return res.json();
+            }else {
+                return null;
+            }
+        }).then(data => {
+            if (data) {
+                setActiveUserData({
+                    "username": data.username,
+                });
+            }
+        })
     }, []);
 
     return (
@@ -33,6 +51,7 @@ function WhoToFollow() {
                         id={id}
                         fullName={fullname}
                         userName={username}
+                        activeUserName={activeUserData.username}
                         displayPicture={profile_pic_filename}
                     />
                 ))

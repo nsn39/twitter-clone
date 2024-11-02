@@ -507,7 +507,7 @@ function PostDetail(props) {
             </div>
 
             <div className='flex flex-row p-4 border-b-[0.1px] border-slate-300'>
-                <img src={REACT_APP_FS_URL + activeUserData.displayPicture} className='h-10 w-10 rounded-full'></img>
+                <img src={REACT_APP_FS_URL + activeUserData.displayPicture} className='flex-none h-10 w-10 rounded-full'></img>
                 <textarea className='w-full h-20 mx-2 outline-none text-xl resize-none' placeholder='Post your reply' onChange={replyInputHandler} value={replyText}></textarea>
 
                 <ReplyButton />

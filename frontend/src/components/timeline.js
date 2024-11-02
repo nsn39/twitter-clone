@@ -176,7 +176,7 @@ function Timeline ({setPostMode, setActiveTweetData}) {
                         key={id} 
                         id={id} 
                         displayName={fullname} 
-                        userName={"@" + username} 
+                        userName={username} 
                         tweetText={content} 
                         originalTimestamp={created_on} 
                         displayPicture={profile_pic_filename} 

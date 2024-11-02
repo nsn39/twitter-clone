@@ -13,6 +13,7 @@ const monthIntToStr = {
     12: "Dec"
 }
 
+
 const beautifyTimestamp = (originalTimestamp) => {
 
     const timestampObj = new Date(originalTimestamp);

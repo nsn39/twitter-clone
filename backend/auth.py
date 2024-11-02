@@ -41,6 +41,9 @@ class UserSchema(BaseModel):
 class UserInDB(UserSchema):
     id: UUID
     phone_no:str
+    joined_day: int
+    joined_month: int
+    joined_year: int
     birth_day:int
     birth_month:int
     birth_year:int
@@ -102,6 +105,11 @@ def get_user(username: str):
         user_query_result = user_query.one_or_none()
         if user_query_result:
             user_dict = user_query_result.__dict__
+            
+            user_dict["joined_day"] = user_dict["created_on"].day
+            user_dict["joined_month"] = user_dict["created_on"].month
+            user_dict["joined_year"] = user_dict["created_on"].year
+            
             user_dict["birth_day"] = user_dict["birthdate"].day
             user_dict["birth_month"] = user_dict["birthdate"].month
             user_dict["birth_year"] = user_dict["birthdate"].year

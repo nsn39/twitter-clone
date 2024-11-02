@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useOutsideClick } from '../hooks/useOutsideClick';
 
 
 function Navbar ({setPostMode, showNotificationCount}) {
@@ -14,6 +15,11 @@ function Navbar ({setPostMode, showNotificationCount}) {
     const handlePostClick = () => {
         setPostMode(true);
     }
+
+    const LogoutDivRef = useOutsideClick(() => {
+        let btn_area = document.getElementById("logout-bar");
+        btn_area.classList.add("hidden");
+    });
 
     const toggleDropdown = () => {
         let dropdown = document.querySelector("#profile-bar #logout-bar");
@@ -230,7 +236,7 @@ function Navbar ({setPostMode, showNotificationCount}) {
                     </button>
                 </div>
 
-                <button onClick={handleLogoutClick} id="logout-bar" className="absolute hidden hover:bg-gray-200 shadow-lg rounded-md px-8 py-3 top-[-50px] bg-white">
+                <button ref={LogoutDivRef} onClick={handleLogoutClick} id="logout-bar" className="absolute hidden hover:bg-gray-200 shadow-lg rounded-md px-8 py-3 top-[-50px] bg-white">
                     <p className="font-bold text-md">Logout @username</p>
                 </button>
             </div>

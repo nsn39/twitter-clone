@@ -14,7 +14,11 @@ function Tweet(props) {
         "originalTimestamp": props.originalTimestamp
     });
     const [tweetAnalytics, setTweetAnalytics] = useState({
-        "likes_count": 0
+        "likes_count": 0,
+        "retweets_count": 0,
+        "quotes_count": 0,
+        "total_retweets": 0,
+        "replies_count": 0
     });
 
     const simplifyUUID = (str) => {
@@ -258,14 +262,27 @@ function Tweet(props) {
         if (props.postType == "reply") { //no retweet if a reply.
             return;
         }
-        onMouseOverRetweet();
-        setIsRetweeted(true);
-        retweetSubmitter();
+
+        if (!isRetweeted) {
+            onMouseOverRetweet();
+            retweetSubmitter();
+            setIsRetweeted(true);
+
+            setTweetAnalytics((prevFormData) => ({ 
+                ...prevFormData, 
+                ["retweets_count"]: (tweetAnalytics.retweets_count + 1),
+                ["total_retweets"]: (tweetAnalytics.total_retweets + 1)
+            }));
+        }
+        else {
+            setIsRetweeted(false);
+            onMouseOutRetweet();
+        }
+        
     }
 
     const onDeleteClick = (e) => {
         e.stopPropagation();
-        //e.preventDefault();
         fetch(REACT_APP_BACKEND_URL + "tweet/" + props.id, {
             method: "DELETE",
             credentials: "include"
@@ -274,7 +291,6 @@ function Tweet(props) {
             if (res.status == 204) {
                 //console.log(props.tweetList.length);
                 const updatedTweets = props.tweetList.filter(item => item.id !== props.id);
-                console.log(updatedTweets);
                 props.updateTweetList([...updatedTweets]);
             }
             else {
@@ -307,11 +323,11 @@ function Tweet(props) {
                 <div className="flex flex-row items-center mb-2">
                     <img className='flex-none h-6 w-6 rounded-full mr-1' src={picURL} />
                     <p className="font-bold hover:underline mr-1">
-                        <a href="./">{originalTweetData.fullname}</a> 
+                        <a href={"/" + originalTweetData.username}>{originalTweetData.fullname}</a> 
                     </p>
                     <p className="flex flex-row text-base text-gray-400 mr-1">
                         <p className='mr-1'>&bull;</p>
-                        <a href="./">{"@" + originalTweetData.username }</a>
+                        <a href={"/" + originalTweetData.username}>{"@" + originalTweetData.username }</a>
                     </p>
                     <p className='text-gray-400 mr-1'>&bull;</p>
                     <div className='relative w-auto'>
@@ -338,6 +354,18 @@ function Tweet(props) {
                 <p>{props.userName + " retweeted"}</p>
             </div>
         );
+    }
+
+    const RetweetButtonMessage = () => {
+        if (isRetweeted) {
+            return (
+                <p>Undo Retweet</p>
+            );
+        } else {
+            return (
+                <p>Retweet</p>
+            );
+        }
     }
 
     const TweetOptionsDiv = () => {
@@ -428,7 +456,13 @@ function Tweet(props) {
         })
         .then((data) => {
             if (data) {
-                setTweetAnalytics(data);
+                setTweetAnalytics({
+                    "likes_count": data.likes_count,
+                    "retweets_count": data.retweets_count,
+                    "quotes_count": data.quotes_count,
+                    "replies_count": data.replies_count,
+                    "total_retweets": (data.quotes_count + data.retweets_count)
+                });
             }
         })
 
@@ -443,10 +477,10 @@ function Tweet(props) {
                     <div className="flex flex-row items-center justify-between">
                         <div className='flex flex-row items-center'>
                             <p className="font-bold hover:underline mr-1">
-                                <a href="./">{tweetData.displayName}</a> 
+                                <a href={"/" + tweetData.userName}>{tweetData.displayName}</a> 
                             </p>
                             <p className="flex flex-row text-base text-gray-400 mr-1">
-                                <p className='mr-1'>&bull;</p><a href="./">{tweetData.userName}</a>
+                                <p className='mr-1'>&bull;</p><a className='hover:underline' href={"/" + tweetData.userName}>{"@" + tweetData.userName}</a>
                             </p>
                             <p className='text-sm text-gray-400'>&bull;</p>
                             <div className='relative w-auto'>
@@ -473,20 +507,28 @@ function Tweet(props) {
 
                     <div className='flex flex-row p-2 items-center justify-stretch'>
 
-                        <div className='flex flex-row w-full'>
+                        <div className='flex flex-row w-full items-center text-slate-600 hover:text-blue-400'>
                             <button onClick={onReplyClick} onMouseOver={onMouseOverReply} onMouseOut={onMouseOutReply} className='h-9 w-9 flex items-center justify-center hover:bg-blue-200 rounded-full'>
                                 <svg id={"reply_svg_" + tweetElementId} className='h-6 w-6' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M20 17V15.8C20 14.1198 20 13.2798 19.673 12.638C19.3854 12.0735 18.9265 11.6146 18.362 11.327C17.7202 11 16.8802 11 15.2 11H4M4 11L8 7M4 11L8 15" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                             </button>
+
+                            {
+                                (tweetAnalytics.replies_count > 0) && <p className='text-sm'>{tweetAnalytics.replies_count}</p>
+                            }
                         </div>
 
-                        <div className='relative flex flex-row w-full'>
+                        <div className='relative flex flex-row w-full items-center text-slate-600 hover:text-green-400'>
                             <button onClick={onRetweetIconClick} onMouseOver={onMouseOverRetweet} onMouseOut={onMouseOutRetweet} className='h-9 w-9 flex items-center justify-center hover:bg-green-200 rounded-full'>
                                 <svg id={"retweet_svg_" + tweetElementId} className='h-6 w-6' fill="#000000" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M136 552h63.6c4.4 0 8-3.6 8-8V288.7h528.6v72.6c0 1.9.6 3.7 1.8 5.2a8.3 8.3 0 0 0 11.7 1.4L893 255.4c4.3-5 3.6-10.3 0-13.2L749.7 129.8a8.22 8.22 0 0 0-5.2-1.8c-4.6 0-8.4 3.8-8.4 8.4V209H199.7c-39.5 0-71.7 32.2-71.7 71.8V544c0 4.4 3.6 8 8 8zm752-80h-63.6c-4.4 0-8 3.6-8 8v255.3H287.8v-72.6c0-1.9-.6-3.7-1.8-5.2a8.3 8.3 0 0 0-11.7-1.4L131 768.6c-4.3 5-3.6 10.3 0 13.2l143.3 112.4c1.5 1.2 3.3 1.8 5.2 1.8 4.6 0 8.4-3.8 8.4-8.4V815h536.6c39.5 0 71.7-32.2 71.7-71.8V480c-.2-4.4-3.8-8-8.2-8z"></path> </g></svg>
                             </button>
 
+                            {
+                                (tweetAnalytics.total_retweets > 0) && <p className='text-sm'>{tweetAnalytics.total_retweets}</p>
+                            }
+
                             <div ref={ref} id={"retweet_icon_" + tweetElementId} className='absolute right-[80px] hidden flex flex-col rounded-2xl bg-white overflow-hidden shadow-2xl border-[0.5px] border-slate-150'>
                                 <button onClick={onRetweetClick} className='px-6 py-2 text-base font-bold hover:bg-slate-100'>
-                                    Retweet
+                                    <RetweetButtonMessage />
                                 </button>
 
                                 <button onClick={onQuoteTweetClick} className='px-6 py-2 text-base font-bold hover:bg-slate-100 '>
