@@ -7,27 +7,27 @@
         font-family: "Chirp";
         font-style: normal;
         font-weight: 700;
-        src: url("./fonts/Chirp-Bold.ttf");
+        src: url("./fonts/chirp-bold-web.woff");
     }
 
     @font-face {
         font-family: "Chirp";
         font-style: normal;
         font-weight: 800;
-        src: url("./fonts/Chirp-Heavy.ttf");
+        src: url("./fonts/chirp-heavy-web.woff");
     }
 
     @font-face {
         font-family: "Chirp";
         font-style: normal;
         font-weight: 500;
-        src: url("./fonts/Chirp-Medium.ttf");
+        src: url("./fonts/chirp-medium-web.woff");
     }
 
     @font-face {
         font-family: "Chirp";
         font-style: normal;
         font-weight: 400;
-        src: url("./fonts/Chirp-Regular.ttf");
+        src: url("./fonts/chirp-regular-web.woff");
     }
 }

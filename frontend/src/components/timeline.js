@@ -118,7 +118,7 @@ function Timeline ({setPostMode, setActiveTweetData}) {
 
     return (
         <Fragment>
-        <div className="md:w-[46%] border-x-[0.5px] border-gray-200">
+        <div className="md:w-[46%] border-x-[0.5px] border-gray-100">
             <div className='flex flex-row md:hidden px-4 py-3 items-center'>
                 <button onClick={handleMobileNavClick} className='h-9 w-9'>
                     <img className='h-8 w-8 rounded-full' src={REACT_APP_FS_URL + userData.display_picture_link} />
@@ -129,21 +129,21 @@ function Timeline ({setPostMode, setActiveTweetData}) {
                 </div>
             </div>
 
-            <div className="flex flex-row font-bold w-full justify-around border-b border-slate-300">
-                <button onClick={() => handleFeedStateChange("state1")} className="hover:bg-gray-400 h-full w-full py-4 flex items-center justify-center">
+            <div className="flex flex-row font-bold w-full justify-around border-b border-gray-100">
+                <button onClick={() => handleFeedStateChange("state1")} className="hover:bg-gray-100 h-full w-full py-4 flex items-center justify-center">
                     <p className='underline decoration-4 decoration-sky-400 underline-offset-[18px]' id='feed_state_1'>For you</p>                    
                 </button>
                 
-                <button onClick={() => handleFeedStateChange("state2")} className="hover:bg-gray-400 h-full w-full py-4 flex items-center justify-center">
+                <button onClick={() => handleFeedStateChange("state2")} className="hover:bg-gray-100 h-full w-full py-4 flex items-center justify-center">
                     <p className='decoration-4 decoration-sky-400 underline-offset-[18px]' id='feed_state_2'>Following</p>
                 </button>
             </div>
             
-            <div className="flex flex-row p-3 items-start border-b border-slate-300">
+            <div className="hidden md:flex flex-row p-3 items-start border-b border-gray-100">
                 <img src={REACT_APP_FS_URL + userData.display_picture_link} className='flex-none h-10 w-10 rounded-full mr-4' />
 
                 <div className='grow flex flex-col'>
-                    <textarea className="h-24 w-full mr-2 border-b border-slate-300 outline-none resize-none text-xl" type="text" placeholder="What's happening?" onChange={inputHandler} value={inputText}/>
+                    <textarea className="h-24 w-full mr-2 border-b border-gray-100 outline-none resize-none text-[22px] placeholder-gray-500" type="text" placeholder="What's happening?" onChange={inputHandler} value={inputText}/>
 
                     <div className='flex flex-row items-center justify-between mt-2'>
                         <div className='flex flex-row items-center justify-center'>

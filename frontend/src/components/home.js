@@ -3,12 +3,16 @@ import Sidebar from "./sidebar";
 import Timeline from "./timeline";
 import PostModal from "./postModal";
 
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 
 
 function Home() {
     const [postMode, setPostMode] = useState(false);
     const [activeTweetData, setActiveTweetData] = useState(null);
+
+    useEffect(() => {
+        document.title =  "Home";
+    }, []);
 
     return (
         <Fragment>

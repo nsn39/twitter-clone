@@ -3,13 +3,13 @@ import SearchBar from "./searchBar";
 
 function ExploreArea() {
     return (
-        <div className="h-screen md:w-[46%] border-x-[0.5px] border-gray-300">
+        <div className="h-screen md:w-[46%] border-x-[0.5px] border-gray-100">
             <div className="p-2">
                 <SearchBar />
             </div>
             
 
-            <div className="flex flex-row border-b-[0.5px] border-gray-300 overflow-x-scroll">
+            <div className="flex flex-row border-b-[0.5px] border-gray-100 overflow-x-scroll">
                 <button className="flex-auto hover:bg-gray-300 p-3 text-sm md:text-base font-bold text-gray-500">For You</button>
                 <button className="flex-auto hover:bg-gray-300 p-3 text-sm md:text-base font-bold text-gray-500">Trending</button>
                 <button className="flex-auto hover:bg-gray-300 p-3 text-sm md:text-base font-bold text-gray-500">News</button>

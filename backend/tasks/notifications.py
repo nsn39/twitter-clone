@@ -117,7 +117,7 @@ async def create_post_notification(user_obj, post_id):
             await connection_manager.send_json(str(parent_post_obj.user_id), notification_dict)
             
             
-def set_notifications_as_read(recipient_id: str):
+async def set_notifications_as_read(recipient_id: str):
     try:
         session.execute(
             update(Notifications)
@@ -127,4 +127,5 @@ def set_notifications_as_read(recipient_id: str):
         )
         session.commit()
     except Exception as e:
+        session.rollback()
         logger.error(f"Failed to update Notifications seen due to: {e}")

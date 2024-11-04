@@ -120,7 +120,7 @@ function ProfileArea(props) {
 
     if (!userExists) {
         return (
-            <div className="w-[46%] border-x-[0.5px] border-gray-200">
+            <div className="w-[46%] border-x-[0.5px] border-gray-100">
                 <h3 className="font-bold text-3xl mt-24 p-4">Sorry, the user @{props.userName} doesn't exist.</h3>
             </div>
         );
@@ -216,11 +216,22 @@ export default ProfileArea;
 //complete post_count, reply_count and retweet_count,
 //FE pmobile screen reponsiveness completely
 //DPs in postModal
-//better font quality and thinner border for tweets
+//better font quality and thinner border for tweets, smaller like buttons of grey color
 //joined date in profile fix.
 
+//postdetail like color and number fix.
+//undo retweet fix.
+//mobile mode navbar button click
+//absolute post button in mobile click and remove textarea from timeline.
+//page titles
+
+//post time bug fix.
+
+//postmodal in some pages fix.
 //notifications bug fix
 //likes bug fix.
+//make search bar work in explore page as well.
+//refactor some backend. dependency injection, separate session for each endpoint call.
 
 //docker-compose include
 //same domain using nginx

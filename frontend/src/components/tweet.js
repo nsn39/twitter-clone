@@ -31,6 +31,8 @@ function Tweet(props) {
     const [innerTweetID, setInnerTweetID] = useState("");
     const [isLiked, setIsLiked] = useState(false);
     const [isRetweeted, setIsRetweeted] = useState(false);
+    const [likeCountColor, setLikeCountColor] = useState("");
+    const [retweetCountColor, setRetweetCountColor] = useState("");
 
     const ref = useOutsideClick(() => {
         let btn_area = document.getElementById("retweet_icon_" + tweetElementId);
@@ -94,7 +96,7 @@ function Tweet(props) {
     const onMouseOutLike = () => {
         let svg_element = document.querySelector("#like_svg_" + tweetElementId + " > g > path");
         if (!isLiked) {
-            svg_element.setAttribute("stroke", "#000000")
+            svg_element.setAttribute("stroke", "#6b7280")
         }
     }
 
@@ -106,7 +108,7 @@ function Tweet(props) {
     const onMouseOutRetweet = () => {
         if (!isRetweeted) {
             let svg_element = document.querySelector("#retweet_svg_" + tweetElementId);
-            svg_element.setAttribute("fill", "#000000");
+            svg_element.setAttribute("fill", "#6b7280");
         }
     }
 
@@ -117,7 +119,7 @@ function Tweet(props) {
 
     const onMouseOutReply = () => {
         let svg_element = document.querySelector("#reply_svg_" + tweetElementId + " > g > path");
-        svg_element.setAttribute("stroke", "#000000")
+        svg_element.setAttribute("stroke", "#6b7280")
     }
 
     const onMouseOverShare = () => {
@@ -127,7 +129,7 @@ function Tweet(props) {
 
     const onMouseOutShare = () => {
         let svg_element = document.querySelector("#share_svg_" + tweetElementId + " > g > g > path");
-        svg_element.setAttribute("stroke", "#000000")
+        svg_element.setAttribute("stroke", "#6b7280")
     }
 
     const onQuoteTweetClick = (e) => {
@@ -180,9 +182,10 @@ function Tweet(props) {
             //FE changes.
             colorLikeButton();
             setIsLiked(true);
+            setLikeCountColor("text-red-400");
             setTweetAnalytics((prevFormData) => ({ ...prevFormData, ["likes_count"]: (tweetAnalytics.likes_count + 1) }));
             //BE changes
-            fetch(REACT_APP_BACKEND_URL + "like/" + tweetData.id, {
+            fetch(REACT_APP_BACKEND_URL + "like/" + props.id, {
                 method: "POST",
                 credentials: "include"
             })
@@ -196,6 +199,7 @@ function Tweet(props) {
         else {
             uncolorLikeButton();
             setIsLiked(false);
+            setLikeCountColor("");
             setTweetAnalytics((prevFormData) => ({ ...prevFormData, ["likes_count"]: (tweetAnalytics.likes_count - 1) }));
             fetch(REACT_APP_BACKEND_URL + "unlike/" + tweetData.id, 
                 {
@@ -267,6 +271,7 @@ function Tweet(props) {
             onMouseOverRetweet();
             retweetSubmitter();
             setIsRetweeted(true);
+            setRetweetCountColor("text-green-400");
 
             setTweetAnalytics((prevFormData) => ({ 
                 ...prevFormData, 
@@ -431,6 +436,7 @@ function Tweet(props) {
             if (res.status == 200) {
                 colorLikeButton();
                 setIsLiked(true);
+                setLikeCountColor("text-red-400");
             }
         })
 
@@ -442,6 +448,7 @@ function Tweet(props) {
             if (res.status == 200){
                 onMouseOverRetweet();
                 setIsRetweeted(true);
+                setRetweetCountColor("text-green-400");
             }
         })
 
@@ -469,7 +476,7 @@ function Tweet(props) {
     }, [tweetData.id, tweetData.originalTimestamp, tweetElementId]);
 
     return (
-        <div className="flex flex-col border-b border-slate-300 hover:bg-gray-200 p-3 cursor-pointer" onClick={handleClick}>
+        <div className="flex flex-col border-b border-gray-100 hover:bg-gray-100 px-3 py-2 cursor-pointer" onClick={handleClick}>
             <RetweetMessage />
             <div className='flex flex-row'>
                 <img className='flex-none h-10 w-10 rounded-full mr-2' src={REACT_APP_FS_URL + tweetData.displayPicture} />
@@ -501,15 +508,15 @@ function Tweet(props) {
                         </div>
                         
                     </div>
-                    <p className="border-b-200 text-base">{tweetData.tweetText}</p>
+                    <p className="border-b-200 text-base leading-tight text-slate-900">{tweetData.tweetText}</p>
 
                     <QuoteTweetComponent />
 
-                    <div className='flex flex-row p-2 items-center justify-stretch'>
+                    <div className='flex flex-row p-2 pb-0 items-center justify-stretch'>
 
                         <div className='flex flex-row w-full items-center text-slate-600 hover:text-blue-400'>
                             <button onClick={onReplyClick} onMouseOver={onMouseOverReply} onMouseOut={onMouseOutReply} className='h-9 w-9 flex items-center justify-center hover:bg-blue-200 rounded-full'>
-                                <svg id={"reply_svg_" + tweetElementId} className='h-6 w-6' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M20 17V15.8C20 14.1198 20 13.2798 19.673 12.638C19.3854 12.0735 18.9265 11.6146 18.362 11.327C17.7202 11 16.8802 11 15.2 11H4M4 11L8 7M4 11L8 15" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                                <svg id={"reply_svg_" + tweetElementId} className='h-5 w-5' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M20 17V15.8C20 14.1198 20 13.2798 19.673 12.638C19.3854 12.0735 18.9265 11.6146 18.362 11.327C17.7202 11 16.8802 11 15.2 11H4M4 11L8 7M4 11L8 15" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                             </button>
 
                             {
@@ -519,11 +526,13 @@ function Tweet(props) {
 
                         <div className='relative flex flex-row w-full items-center text-slate-600 hover:text-green-400'>
                             <button onClick={onRetweetIconClick} onMouseOver={onMouseOverRetweet} onMouseOut={onMouseOutRetweet} className='h-9 w-9 flex items-center justify-center hover:bg-green-200 rounded-full'>
-                                <svg id={"retweet_svg_" + tweetElementId} className='h-6 w-6' fill="#000000" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M136 552h63.6c4.4 0 8-3.6 8-8V288.7h528.6v72.6c0 1.9.6 3.7 1.8 5.2a8.3 8.3 0 0 0 11.7 1.4L893 255.4c4.3-5 3.6-10.3 0-13.2L749.7 129.8a8.22 8.22 0 0 0-5.2-1.8c-4.6 0-8.4 3.8-8.4 8.4V209H199.7c-39.5 0-71.7 32.2-71.7 71.8V544c0 4.4 3.6 8 8 8zm752-80h-63.6c-4.4 0-8 3.6-8 8v255.3H287.8v-72.6c0-1.9-.6-3.7-1.8-5.2a8.3 8.3 0 0 0-11.7-1.4L131 768.6c-4.3 5-3.6 10.3 0 13.2l143.3 112.4c1.5 1.2 3.3 1.8 5.2 1.8 4.6 0 8.4-3.8 8.4-8.4V815h536.6c39.5 0 71.7-32.2 71.7-71.8V480c-.2-4.4-3.8-8-8.2-8z"></path> </g></svg>
+                                <svg id={"retweet_svg_" + tweetElementId} className='h-5 w-5' fill="#6b7280" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M136 552h63.6c4.4 0 8-3.6 8-8V288.7h528.6v72.6c0 1.9.6 3.7 1.8 5.2a8.3 8.3 0 0 0 11.7 1.4L893 255.4c4.3-5 3.6-10.3 0-13.2L749.7 129.8a8.22 8.22 0 0 0-5.2-1.8c-4.6 0-8.4 3.8-8.4 8.4V209H199.7c-39.5 0-71.7 32.2-71.7 71.8V544c0 4.4 3.6 8 8 8zm752-80h-63.6c-4.4 0-8 3.6-8 8v255.3H287.8v-72.6c0-1.9-.6-3.7-1.8-5.2a8.3 8.3 0 0 0-11.7-1.4L131 768.6c-4.3 5-3.6 10.3 0 13.2l143.3 112.4c1.5 1.2 3.3 1.8 5.2 1.8 4.6 0 8.4-3.8 8.4-8.4V815h536.6c39.5 0 71.7-32.2 71.7-71.8V480c-.2-4.4-3.8-8-8.2-8z"></path> </g></svg>
                             </button>
 
                             {
-                                (tweetAnalytics.total_retweets > 0) && <p className='text-sm'>{tweetAnalytics.total_retweets}</p>
+                                (tweetAnalytics.total_retweets > 0) 
+                                && 
+                                <p className={'text-sm ' + retweetCountColor}>{tweetAnalytics.total_retweets}</p>
                             }
 
                             <div ref={ref} id={"retweet_icon_" + tweetElementId} className='absolute right-[80px] hidden flex flex-col rounded-2xl bg-white overflow-hidden shadow-2xl border-[0.5px] border-slate-150'>
@@ -539,17 +548,19 @@ function Tweet(props) {
 
                         <div className='flex flex-row w-full items-center text-slate-600 hover:text-red-400'>
                             <button onClick={handleLikeClick} onMouseOver={onMouseOverLike} onMouseOut={onMouseOutLike} className='h-9 w-9 flex items-center justify-center hover:bg-red-200 rounded-full'>
-                                <svg id={"like_svg_" + tweetElementId} className='hover:bg-red-200 hover:rounded-full h-6 w-6' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M12 6.00019C10.2006 3.90317 7.19377 3.2551 4.93923 5.17534C2.68468 7.09558 2.36727 10.3061 4.13778 12.5772C5.60984 14.4654 10.0648 18.4479 11.5249 19.7369C11.6882 19.8811 11.7699 19.9532 11.8652 19.9815C11.9483 20.0062 12.0393 20.0062 12.1225 19.9815C12.2178 19.9532 12.2994 19.8811 12.4628 19.7369C13.9229 18.4479 18.3778 14.4654 19.8499 12.5772C21.6204 10.3061 21.3417 7.07538 19.0484 5.17534C16.7551 3.2753 13.7994 3.90317 12 6.00019Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                                <svg id={"like_svg_" + tweetElementId} className='hover:bg-red-200 hover:rounded-full h-5 w-5' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M12 6.00019C10.2006 3.90317 7.19377 3.2551 4.93923 5.17534C2.68468 7.09558 2.36727 10.3061 4.13778 12.5772C5.60984 14.4654 10.0648 18.4479 11.5249 19.7369C11.6882 19.8811 11.7699 19.9532 11.8652 19.9815C11.9483 20.0062 12.0393 20.0062 12.1225 19.9815C12.2178 19.9532 12.2994 19.8811 12.4628 19.7369C13.9229 18.4479 18.3778 14.4654 19.8499 12.5772C21.6204 10.3061 21.3417 7.07538 19.0484 5.17534C16.7551 3.2753 13.7994 3.90317 12 6.00019Z" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                             </button>
 
                             {
-                                (tweetAnalytics.likes_count > 0) && <p className='text-sm'>{tweetAnalytics.likes_count}</p>
+                                (tweetAnalytics.likes_count > 0) 
+                                && 
+                                <p className={'text-sm ' + likeCountColor}>{tweetAnalytics.likes_count}</p>
                             }
                         </div>
 
                         <div className='flex flex-row w-full'>
                             <button onMouseOver={onMouseOverShare} onMouseOut={onMouseOutShare} className='h-9 w-9 flex items-center justify-center hover:bg-blue-200 rounded-full'>
-                                <svg id={"share_svg_" + tweetElementId} className='h-6 w-6' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g id="Communication / Share_iOS_Export"> <path id="Vector" d="M9 6L12 3M12 3L15 6M12 3V13M7.00023 10C6.06835 10 5.60241 10 5.23486 10.1522C4.74481 10.3552 4.35523 10.7448 4.15224 11.2349C4 11.6024 4 12.0681 4 13V17.8C4 18.9201 4 19.4798 4.21799 19.9076C4.40973 20.2839 4.71547 20.5905 5.0918 20.7822C5.5192 21 6.07899 21 7.19691 21H16.8036C17.9215 21 18.4805 21 18.9079 20.7822C19.2842 20.5905 19.5905 20.2839 19.7822 19.9076C20 19.4802 20 18.921 20 17.8031V13C20 12.0681 19.9999 11.6024 19.8477 11.2349C19.6447 10.7448 19.2554 10.3552 18.7654 10.1522C18.3978 10 17.9319 10 17 10" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g> </g></svg>
+                                <svg id={"share_svg_" + tweetElementId} className='h-5 w-5' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g id="Communication / Share_iOS_Export"> <path id="Vector" d="M9 6L12 3M12 3L15 6M12 3V13M7.00023 10C6.06835 10 5.60241 10 5.23486 10.1522C4.74481 10.3552 4.35523 10.7448 4.15224 11.2349C4 11.6024 4 12.0681 4 13V17.8C4 18.9201 4 19.4798 4.21799 19.9076C4.40973 20.2839 4.71547 20.5905 5.0918 20.7822C5.5192 21 6.07899 21 7.19691 21H16.8036C17.9215 21 18.4805 21 18.9079 20.7822C19.2842 20.5905 19.5905 20.2839 19.7822 19.9076C20 19.4802 20 18.921 20 17.8031V13C20 12.0681 19.9999 11.6024 19.8477 11.2349C19.6447 10.7448 19.2554 10.3552 18.7654 10.1522C18.3978 10 17.9319 10 17 10" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g> </g></svg>
                             </button>
                         </div>
                     </div>

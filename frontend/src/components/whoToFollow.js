@@ -41,7 +41,7 @@ function WhoToFollow() {
     }, []);
 
     return (
-        <div className="flex flex-col border-[0.5px] border-gray-400 mt-4 rounded-lg">
+        <div className="flex flex-col border-[0.5px] border-gray-100 mt-4 rounded-lg">
             <h3 className="text-2xl font-bold p-2">Who to follow</h3>
             
             {

@@ -12,13 +12,13 @@ function Sidebar () {
                 <SearchBar />
             </div>
             
-            <div className="flex flex-col border border-gray-400 p-2 mt-4 rounded-lg">
-                <h3 className="text-xl font-extrabold">Subscribe to Premium</h3>
-                <p className="text-base">Subscribe to unlock new features and if eligible, receive a share of ads revenue.</p>
-                <button className="text-white font-bold bg-black py-2 px-3 rounded-full">Subscribe</button>
+            <div className="flex flex-col text-slate-800 border border-gray-100 p-4 mt-4 rounded-lg">
+                <h3 className="text-[22px] font-extrabold">Subscribe to Premium</h3>
+                <p className="text-base mb-2 leading-tight">Subscribe to unlock new features and if eligible, receive a share of ads revenue.</p>
+                <button className="text-white font-bold bg-black py-[5px] px-3 rounded-full w-24">Subscribe</button>
             </div>
             
-            <div className="flex flex-col border border-gray-400 pt-2 mt-4 rounded-lg">
+            <div className="flex flex-col border border-gray-100 pt-2 mt-4 rounded-lg">
                 <h3 className="text-xl font-extrabold p-2">What's happening?</h3>
                 <TrendingCard trendingType="Television" trendingTopic="Breaking Bad" trendingPosts="996" />
                 <TrendingCard trendingType="Trending" trendingTopic="United States" trendingPosts="2000" />

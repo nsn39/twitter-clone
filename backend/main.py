@@ -643,7 +643,6 @@ async def like_post(
             .where(PostLikedBy.post_id == post_id)
         )
         post_liked_obj = result.one_or_none()
-        print("Post liked obj: ", post_liked_obj)
         
         if not post_liked_obj:
             session.add(PostLikedBy(post_id=post_id, user_id=user.id))
@@ -656,7 +655,6 @@ async def like_post(
             if not post_analytics_obj:
                 session.add(PostAnalytics(post_id=post_id, likes_count=1))
             else:
-                print("obj: ", post_analytics_obj)
                 likes_count = post_analytics_obj.likes_count
                 session.execute(
                     update(PostAnalytics)
@@ -759,7 +757,6 @@ async def unlike_post(post_id: str, userToken: Annotated[str, Cookie()]):
             .where(PostLikedBy.post_id == post_id)
         )
         post_liked_obj = result.one_or_none()
-        print("Post liked obj: ", post_liked_obj)
         
         if post_liked_obj:
             session.delete(post_liked_obj)
@@ -771,7 +768,6 @@ async def unlike_post(post_id: str, userToken: Annotated[str, Cookie()]):
             )
             post_analytics_obj = result.one_or_none()
             if post_analytics_obj:
-                print("obj: ", post_analytics_obj)
                 likes_count = post_analytics_obj.likes_count
                 session.execute(
                     update(PostAnalytics)

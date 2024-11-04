@@ -23,7 +23,7 @@ function NotificationArea() {
 
 
     return (
-        <div className="md:w-[46%] flex flex-col border-x-[0.5px] border-gray-200">
+        <div className="md:w-[46%] flex flex-col border-x-[0.5px] border-gray-100">
             <div className="flex flex-row p-3 justify-between">
                 <h3 className="font-bold text-xl">Notifications</h3>
                 <button className="h-8 w-8 flex rounded-full hover:bg-gray-300 items-center justify-center">
@@ -31,7 +31,7 @@ function NotificationArea() {
                 </button>
             </div>
 
-            <div className="flex flex-row border-b-[0.5px] border-gray-300">
+            <div className="flex flex-row border-b-[0.5px] border-gray-100">
                 <button className="flex-auto hover:bg-gray-200 p-4 font-bold text-gray-400">All</button>
                 <button className="flex-auto hover:bg-gray-200 p-4 font-bold text-gray-400">Verified</button>
                 <button className="flex-auto hover:bg-gray-200 p-4 font-bold text-gray-400">Mentions</button>

@@ -71,7 +71,10 @@ async def get_notifications(
         #print(notifications_list)
         #print(type[notifications_list[0]])
         if notifications_list:
-            notifications_list = [{**(notification[0].__dict__), **(notification[1].__dict__)}  for notification in notifications_list]
+            notifications_list = [
+                {**(notification[0].__dict__), **(notification[1].__dict__)} 
+                for notification in notifications_list
+            ]
             background_tasks.add_task(set_notifications_as_read, str(user.id))
             return notifications_list
         

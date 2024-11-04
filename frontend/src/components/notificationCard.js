@@ -87,7 +87,7 @@ function NotificationCard(props) {
     }
 
     return (
-        <div id={cardID} className="flex flex-row border-b-[0.5px] border-gray-300 hover:bg-gray-300 p-3">
+        <div id={cardID} className="flex flex-row border-b-[0.5px] border-gray-100 hover:bg-gray-300 p-3">
             <div className="ml-3 mt-1">
                 <CardSVG />
             </div> 
