@@ -85,7 +85,6 @@ function ProfileArea(props) {
         })
         .then((data) => {
             if (data) {//accessing fields individually works but setting data at once doesn't ??
-                console.log("profile data received: ", data);
                 setUserData({
                     "id": data.id,
                     "full_name": data.fullname,

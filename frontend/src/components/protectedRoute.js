@@ -17,7 +17,6 @@ const PrivateRoutes = () => {
             if (res.status == 200) {
                 setIsUserLoggedIn(true);
             }
-            console.log("isUserLoggedIn: ", isUserLoggedIn, " res.status: ", res.status);
             setIsLoading(false);
         }
         

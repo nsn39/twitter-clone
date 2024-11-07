@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = 'twitter-clone-backend'
     API_PREFIX: str = 'twitter-clone-api'
     ENVIRONMENT: str = 'dev'
+    DOMAIN_NAME: str = 'localhost'
     
     # Database credentials
     DB_DRIVER: str = 'postgresql'
@@ -13,6 +14,7 @@ class Settings(BaseSettings):
     DB_HOST: str
     DB_PORT: str
     DB_NAME: str
+
     
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     

@@ -15,6 +15,7 @@ from loguru import logger
 
 from db.models import User
 from db.db import session
+from config import settings
 
 # to get a string like this run:
 # openssl rand -hex 32
@@ -41,15 +42,15 @@ class UserSchema(BaseModel):
 class UserInDB(UserSchema):
     id: UUID
     phone_no:str
-    joined_day: int
-    joined_month: int
-    joined_year: int
     birth_day:int
     birth_month:int
     birth_year:int
     gender:str
     hashed_password:str
     country:str
+    joined_day: int | None = None
+    joined_month: int | None = None
+    joined_year: int | None = None
     profile_pic_filename: str | None = None
     bio_text: str | None = None
     location: str | None = None
@@ -200,7 +201,7 @@ async def login_for_access_token(
         response.set_cookie(
             key="userToken",
             value=access_token,
-            domain="localhost",
+            domain=settings.DOMAIN_NAME,
             secure=True, 
             httponly=True,
             max_age=400000,
@@ -278,7 +279,7 @@ async def signup_for_access_token(
         response.set_cookie(
             key="userToken",
             value=access_token,
-            domain="localhost",
+            domain=settings.DOMAIN_NAME,
             secure=False,
             httponly=True,
             max_age=400000,
@@ -318,7 +319,7 @@ async def logout_user(request: Request, response: Response):
         if "userToken" in request.cookies:
             response.delete_cookie(
                 key="userToken",
-                domain="localhost",
+                domain=settings.DOMAIN_NAME,
                 httponly=True,
                 samesite="lax"
             )

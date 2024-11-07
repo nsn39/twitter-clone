@@ -38,7 +38,6 @@ function EditProfileModal ({isVisible, onClose}) {
         })
         .then((data) => {
             if (data) {
-                console.log(data);
                 onClose();
             }
             else {

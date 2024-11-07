@@ -390,7 +390,6 @@ function PostDetail(props) {
             return res.json();
         })
         .then((data) => {
-            console.log("tweet Data:" , data);
             setTweetData({
                 "id": data.id,
                 "tweetText": data.content,

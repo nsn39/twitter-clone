@@ -134,7 +134,7 @@ function Navbar ({setPostMode, showNotificationCount}) {
 
         ws.onmessage = function (event) {
             const data = JSON.parse(event.data);
-            console.log("web socket received message: ", data);
+            //console.log("web socket received message: ", data);
             setNotificationsCount((notificationsCount) => notificationsCount + 1);
             /*
             if (setNotificationData) {

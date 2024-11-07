@@ -36,7 +36,6 @@ function SearchBar() {
         })
         .then((data) => {
             if (data) {
-                console.log("search result: ", data);
                 setSearchResult(data);
             }
         })

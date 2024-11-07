@@ -1,19 +1,19 @@
 {
   "files": {
-    "main.css": "./static/css/main.0e06eae1.css",
-    "main.js": "./static/js/main.7b7c6584.js",
+    "main.css": "./static/css/main.b57e7e35.css",
+    "main.js": "./static/js/main.d8ad82fa.js",
     "static/js/453.8ab44547.chunk.js": "./static/js/453.8ab44547.chunk.js",
-    "static/media/Chirp-Bold.ttf": "./static/media/Chirp-Bold.3f76b12f8ebdcb583efc.ttf",
-    "static/media/Chirp-Medium.ttf": "./static/media/Chirp-Medium.e60f8cb09a1f4c57d085.ttf",
-    "static/media/Chirp-Heavy.ttf": "./static/media/Chirp-Heavy.8b79cfef82644fe8df88.ttf",
-    "static/media/Chirp-Regular.ttf": "./static/media/Chirp-Regular.907460ec6b84d7913ca4.ttf",
+    "static/media/chirp-bold-web.woff": "./static/media/chirp-bold-web.eca8a18551c3cd071cbb.woff",
+    "static/media/chirp-medium-web.woff": "./static/media/chirp-medium-web.7e2d5efa9d786461c571.woff",
+    "static/media/chirp-heavy-web.woff": "./static/media/chirp-heavy-web.89e442c8339f2497d660.woff",
+    "static/media/chirp-regular-web.woff": "./static/media/chirp-regular-web.d7b0cdb927c256291b49.woff",
     "index.html": "./index.html",
-    "main.0e06eae1.css.map": "./static/css/main.0e06eae1.css.map",
-    "main.7b7c6584.js.map": "./static/js/main.7b7c6584.js.map",
+    "main.b57e7e35.css.map": "./static/css/main.b57e7e35.css.map",
+    "main.d8ad82fa.js.map": "./static/js/main.d8ad82fa.js.map",
     "453.8ab44547.chunk.js.map": "./static/js/453.8ab44547.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.0e06eae1.css",
-    "static/js/main.7b7c6584.js"
+    "static/css/main.b57e7e35.css",
+    "static/js/main.d8ad82fa.js"
   ]
 }

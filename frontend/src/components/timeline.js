@@ -23,19 +23,16 @@ function Timeline ({setPostMode, setActiveTweetData}) {
 
     const handleFeedStateChange = (state_id) => {
         if (state_id == "state1") {
-            console.log("for you");
             document.getElementById("feed_state_2").classList.remove("underline");
             document.getElementById("feed_state_1").classList.add("underline");
         }
         else if (state_id == "state2") {
-            console.log("following");
             document.getElementById("feed_state_2").classList.add("underline");
             document.getElementById("feed_state_1").classList.remove("underline");
         }
     }
     
     useEffect(() => {
-        console.log(".env variable: ", REACT_APP_BACKEND_URL);
         fetch(REACT_APP_BACKEND_URL + "active_user", {
             method: "GET",
             credentials: "include"
@@ -47,13 +44,11 @@ function Timeline ({setPostMode, setActiveTweetData}) {
             }
         }).then(data => {
             if (data) {
-                console.log(data.fullname);
                 setUserData({
                     "full_name": data.fullname,
                     "username": data.username,
                     "display_picture_link": data.profile_pic_filename
                 });
-                console.log("user data: ", userData);
             }
         })
 
@@ -65,14 +60,12 @@ function Timeline ({setPostMode, setActiveTweetData}) {
                 return res.json();
             })
             .then((data) => {
-                console.log(data);
                 setTweetState(data);
             });
     }, []);
     
 
     let inputHandler = (e) => {
-        console.log(e);
         //e.preventDefault();
         setInputText(e.target.value);
     }
@@ -110,7 +103,6 @@ function Timeline ({setPostMode, setActiveTweetData}) {
                 if (data) {
                     setTweetState([data, ...userTweets]);
                     setInputText("");
-                    console.log("userTweets: ", userTweets);
                 }
             })
             .catch(error => console.error(error));

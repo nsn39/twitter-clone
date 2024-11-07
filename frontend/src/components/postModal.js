@@ -148,7 +148,6 @@ function PostModal({isVisible, onClose, activeTweetData, setActiveTweetData}) {
     }
 
     let inputHandler = (e) => {
-        console.log(e);
         //e.preventDefault();
         setInputText(e.target.value);
     }

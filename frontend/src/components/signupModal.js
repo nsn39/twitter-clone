@@ -32,7 +32,6 @@ function SignupModal({isVisible, onClose}) {
 
     const handleChange = (event) => {
         const {name, value} = event.target;
-        console.log("Name -> value: ", name, value)
         setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
     }
 
@@ -52,7 +51,6 @@ function SignupModal({isVisible, onClose}) {
         form_data.append("country", formData.country);
         form_data.append("gender", formData.gender);
 
-        console.log(form_data);
         //get a token and save it to local state.
         fetch(REACT_APP_BACKEND_URL + "auth/signup", {
             "method": "POST",
@@ -61,12 +59,9 @@ function SignupModal({isVisible, onClose}) {
         })
         .then((res) => {
             if (res.status == 201) {
-                console.log("signup successful");
                 navigate("/")
             }
             else {
-                console.log("signup failed");
-                console.log(res);
                 setSubmitMessage("Something went wrong!!! Unable to Sign Up.");
             }
         })

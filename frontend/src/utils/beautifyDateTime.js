@@ -27,8 +27,6 @@ const beautifyTimestamp = (originalTimestamp) => {
     const minutes = dateObj.getMinutes();
     const seconds = dateObj.getSeconds();
 
-    console.log(year, month, date, hours, minutes, seconds);
-
     const currentTimestampValue = Date.now();
 
     const timestampDifferenceSeconds = (currentTimestampValue - timestampValue)/1000.0;

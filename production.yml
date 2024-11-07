@@ -7,11 +7,19 @@ services:
       dockerfile: Dockerfile
     volumes:
       - development_nginx:/etc/development_nginx/temp
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
     ports:
       - '80:80'
       - '443:443'
     depends_on:
       - backend
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
 
   db:
     image: postgres:15
